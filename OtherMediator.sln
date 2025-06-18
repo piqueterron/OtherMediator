@@ -5,11 +5,15 @@ VisualStudioVersion = 17.8.36129.11
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A3FCDD7C-61A3-4F05-9F8E-9FB47593BA5D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherMediator.Contracts", "src\OtherMediator.Contracts\OtherMediator.Contracts.csproj", "{E048B10E-AB3A-4806-8981-5F6EA460825E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OtherMediator.Contracts", "src\OtherMediator.Contracts\OtherMediator.Contracts.csproj", "{E048B10E-AB3A-4806-8981-5F6EA460825E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherMediator.Extensions.Microsoft.DependencyInjection", "src\OtherMediator.Extensions.Microsoft.DependencyInjection\OtherMediator.Extensions.Microsoft.DependencyInjection.csproj", "{59A4C9B4-FFEF-4B47-8C03-965D0D306175}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OtherMediator.Extensions.Microsoft.DependencyInjection", "src\OtherMediator.Extensions.Microsoft.DependencyInjection\OtherMediator.Extensions.Microsoft.DependencyInjection.csproj", "{59A4C9B4-FFEF-4B47-8C03-965D0D306175}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherMediator", "src\OtherMediator\OtherMediator.csproj", "{65437BF9-9956-4C73-A2B7-19B11353A9DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OtherMediator", "src\OtherMediator\OtherMediator.csproj", "{65437BF9-9956-4C73-A2B7-19B11353A9DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherMediator.Extensions.OpenTelemetry", "src\OtherMediator.Extensions.OpenTelemetry\OtherMediator.Extensions.OpenTelemetry.csproj", "{BCD3EBF9-AC78-4A71-8F9A-BE68ACBE1C2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection", "src\OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection\OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection.csproj", "{4D35ACDD-DF9C-4994-82EA-EEE2E6DF97DD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +33,14 @@ Global
 		{65437BF9-9956-4C73-A2B7-19B11353A9DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65437BF9-9956-4C73-A2B7-19B11353A9DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65437BF9-9956-4C73-A2B7-19B11353A9DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCD3EBF9-AC78-4A71-8F9A-BE68ACBE1C2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCD3EBF9-AC78-4A71-8F9A-BE68ACBE1C2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCD3EBF9-AC78-4A71-8F9A-BE68ACBE1C2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCD3EBF9-AC78-4A71-8F9A-BE68ACBE1C2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D35ACDD-DF9C-4994-82EA-EEE2E6DF97DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D35ACDD-DF9C-4994-82EA-EEE2E6DF97DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D35ACDD-DF9C-4994-82EA-EEE2E6DF97DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D35ACDD-DF9C-4994-82EA-EEE2E6DF97DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -37,6 +49,8 @@ Global
 		{E048B10E-AB3A-4806-8981-5F6EA460825E} = {A3FCDD7C-61A3-4F05-9F8E-9FB47593BA5D}
 		{59A4C9B4-FFEF-4B47-8C03-965D0D306175} = {A3FCDD7C-61A3-4F05-9F8E-9FB47593BA5D}
 		{65437BF9-9956-4C73-A2B7-19B11353A9DC} = {A3FCDD7C-61A3-4F05-9F8E-9FB47593BA5D}
+		{BCD3EBF9-AC78-4A71-8F9A-BE68ACBE1C2E} = {A3FCDD7C-61A3-4F05-9F8E-9FB47593BA5D}
+		{4D35ACDD-DF9C-4994-82EA-EEE2E6DF97DD} = {A3FCDD7C-61A3-4F05-9F8E-9FB47593BA5D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8A146523-F991-4305-B24E-4CA9EA87E4FF}

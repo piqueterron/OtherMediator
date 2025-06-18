@@ -15,6 +15,12 @@ public class MediatorConfiguration(IServiceCollection services)
         set => _lifetime = value;
     }
 
+    public void RegisterServicesFromAssembly<TAssembly>()
+        where TAssembly : class
+    {
+        RegisterServicesFromAssemblies(typeof(TAssembly).Assembly);
+    }
+
     public void RegisterServicesFromAssemblies(params Assembly[] assemblies)
     {
         if (assemblies.Length == 0)

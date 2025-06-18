@@ -15,8 +15,6 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        _container.Build();
-
         var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
         var tasks = handlers.Select(handler => handler.Handle(notification, cancellationToken));
 
@@ -30,8 +28,6 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
 
         var sender = (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(typeof(TRequest), _ =>
         {
-            _container.Build();
-
             var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
             var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
 

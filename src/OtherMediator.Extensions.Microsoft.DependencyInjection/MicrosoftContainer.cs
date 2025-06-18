@@ -12,7 +12,7 @@ public class MicrosoftContainer(IServiceCollection? services) : IContainer
     {
         if (_provider is null)
         {
-            throw new InvalidOperationException("Container has not been built yet.");
+            _provider = _services.BuildServiceProvider();
         }
 
         return (TService)_provider.GetRequiredService(typeof(TService));
@@ -30,6 +30,11 @@ public class MicrosoftContainer(IServiceCollection? services) : IContainer
 
     public void RegisterInstance<TService, TImplementation>(Lifetime lifetime) where TImplementation : TService
     {
+        if (_provider is not null)
+        {
+            throw new InvalidOperationException("The container has already been initialised. No more services can be registered.");
+        }
+
         _services.Add(new ServiceDescriptor(typeof(TService), typeof(TImplementation), lifetime));
     }
 }
