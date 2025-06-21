@@ -6,7 +6,7 @@
 - 🐛 Bug Fixes: 1
 - 📚 Documentation: 0
 0
-- 🛠️ Refactoring: 2
+- 🛠️ Refactoring: 3
 - 🧪 Tests: 0
 0
 - 🔧 Chores: 0
@@ -45,6 +45,9 @@
   `[924dd1206ddfeb1dd5dd62b155b07a0045faee42](https://github.com/piqueterron/OtherMediator/commit/924dd1206ddfeb1dd5dd62b155b07a0045faee42)` by Erik Pique
 
 ### 🛠️ Refactoring
+- update changelog script
+  `[f0a2acf8ecdfb3718466fe54c08aaf01e63fa694](https://github.com/piqueterron/OtherMediator/commit/f0a2acf8ecdfb3718466fe54c08aaf01e63fa694)` by Erik Pique
+
 - change script husky
   `[297d9710fbc606349dbe82d4882508c6cbaf8a13](https://github.com/piqueterron/OtherMediator/commit/297d9710fbc606349dbe82d4882508c6cbaf8a13)` by Erik Pique
 

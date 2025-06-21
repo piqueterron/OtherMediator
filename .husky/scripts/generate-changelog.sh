@@ -27,7 +27,7 @@ else
 fi
 
 if [ -z "$COMMITS" ]; then
-    echo "⚠️ No se encontraron commits para generar el changelog."
+    echo "⚠️ No commits were found to generate the changelog."
     exit 0
 fi
 
