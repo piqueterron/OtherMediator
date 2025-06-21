@@ -3,7 +3,7 @@
    "tasks": [
       {
          "name": "Conventional Commit Linter",
-         "command": "bash",
+         "command": "sh",
          "group": "commit-msg",
          "args": [
             ".husky/scripts/conventional-commits.sh",
@@ -12,7 +12,7 @@
       },
       {
          "name": "Generate and push changelog",
-         "command": "bash",
+         "command": "sh",
          "group": "pre-commit",
          "args": [
             ".husky/scripts/update-changelog-and-push.sh"

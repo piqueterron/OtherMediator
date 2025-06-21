@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 requiredPattern="^(build|[Cc]hore|ci|docs|feat|fix|perf|refactor|revert|style|test|Publish)(\([a-zA-Z]{3,}\-[0-9]{1,7}\))?: .*"
 
