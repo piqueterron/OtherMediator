@@ -48,7 +48,7 @@ PERF_COUNT=$(count_type "perf")
 {
     echo "## [$VERSION] - $TODAY"
     echo
-    echo "**Resumen de cambios:**"
+    echo "**Change Summary:**"
     echo
     echo "- 🚀 Features: $FEAT_COUNT"
     echo "- 🐛 Bug Fixes: $FIX_COUNT"
@@ -113,7 +113,7 @@ fi
 
 OTHERS=$(echo "$COMMITS" | grep -Ev "^\w+\|[^|]+\|(feat|fix|docs|refactor|test|chore|style|perf)(\([^)]+\))?: .+" || true)
 if [ -n "$OTHERS" ]; then
-    echo "### Otros cambios" >> "$TEMP_FILE"
+    echo "### Other changes" >> "$TEMP_FILE"
     echo "$OTHERS" | while IFS= read -r line; do
         COMMIT_HASH=$(echo "$line" | cut -d'|' -f1)
         AUTHOR=$(echo "$line" | cut -d'|' -f2)
