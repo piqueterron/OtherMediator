@@ -89,7 +89,7 @@ append_commits() {
             LINKED_MESSAGE=$(echo "$CLEAN_MESSAGE" | sed -E "s|#([0-9]+)|[#\1]($REPO_URL/issues/\1)|g")
 
             echo "- $LINKED_MESSAGE" >> "$TEMP_FILE"
-            echo "  \`[$COMMIT_HASH]($REPO_URL/commit/$COMMIT_HASH)\` _por $AUTHOR_" >> "$TEMP_FILE"
+            echo "  \`[$COMMIT_HASH]($REPO_URL/commit/$COMMIT_HASH)\` by $AUTHOR" >> "$TEMP_FILE"
             echo >> "$TEMP_FILE"
         fi
     done
@@ -120,7 +120,7 @@ if [ -n "$OTHERS" ]; then
         MESSAGE=$(echo "$line" | cut -d'|' -f3-)
         
         echo "- $MESSAGE" >> "$TEMP_FILE"
-        echo "  \`[$COMMIT_HASH]($REPO_URL/commit/$COMMIT_HASH)\` _por $AUTHOR_" >> "$TEMP_FILE"
+        echo "  \`[$COMMIT_HASH]($REPO_URL/commit/$COMMIT_HASH)\` by $AUTHOR" >> "$TEMP_FILE"
     done
     echo >> "$TEMP_FILE"
 fi
