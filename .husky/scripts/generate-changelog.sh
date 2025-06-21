@@ -33,7 +33,7 @@ fi
 
 count_type() {
     local type="$1"
-    echo "$COMMITS" | grep -cE "^[^|]+\|[^|]+\|${type}(\([^)]+\))?: " || echo "0"
+    echo "$COMMITS" | grep -cE "^[^|]+\|[^|]+\|${type}(\([^)]+\))?: " || echo ""
 }
 
 FEAT_COUNT=$(count_type "feat")

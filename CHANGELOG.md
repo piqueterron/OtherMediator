@@ -5,16 +5,11 @@
 - 🚀 Features: 7
 - 🐛 Bug Fixes: 1
 - 📚 Documentation: 0
-0
-- 🛠️ Refactoring: 3
+- 🛠️ Refactoring: 4
 - 🧪 Tests: 0
-0
 - 🔧 Chores: 0
-0
 - 🎨 Code Style: 0
-0
 - ⚡ Performance: 0
-0
 
 ---
 
@@ -45,6 +40,9 @@
   `[924dd1206ddfeb1dd5dd62b155b07a0045faee42](https://github.com/piqueterron/OtherMediator/commit/924dd1206ddfeb1dd5dd62b155b07a0045faee42)` by Erik Pique
 
 ### 🛠️ Refactoring
+- fixing script count error
+  `[ad501701ad9f7814330c05c4883d431c3901236f](https://github.com/piqueterron/OtherMediator/commit/ad501701ad9f7814330c05c4883d431c3901236f)` by Erik Pique
+
 - update changelog script
   `[f0a2acf8ecdfb3718466fe54c08aaf01e63fa694](https://github.com/piqueterron/OtherMediator/commit/f0a2acf8ecdfb3718466fe54c08aaf01e63fa694)` by Erik Pique
 
