@@ -48,7 +48,7 @@ public class MediatorConfiguration
     {
         if (assemblies == null || assemblies.Length == 0)
         {
-            assemblies = new[] { typeof(MediatorConfiguration).Assembly };
+            assemblies = [typeof(MediatorConfiguration).Assembly];
         }
 
         foreach (var assembly in assemblies)

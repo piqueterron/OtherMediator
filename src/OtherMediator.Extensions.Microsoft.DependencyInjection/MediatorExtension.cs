@@ -23,7 +23,7 @@ public static class MediatorExtension
         return services;
     }
 
-    public static IServiceCollection AddMediatorManualRegistration(this IServiceCollection services, Action<IServiceCollection>? config)
+    public static IServiceCollection AddMediatorManualRegistration(this IServiceCollection services, Action<IServiceCollection> config)
     {
         config?.Invoke(services);
 
@@ -35,6 +35,7 @@ public static class MediatorExtension
     private static IServiceCollection AddCoreMediator(this IServiceCollection services)
     {
         services.AddSingleton<IMediator>(sp => new Mediator(new MicrosoftContainer(services), new MiddlewarePipeline()));
+
         return services;
     }
 }

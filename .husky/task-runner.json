@@ -1,0 +1,30 @@
+{
+   "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+   "tasks": [
+      {
+         "name": "Conventional Commit Linter",
+         "command": "bash",
+         "group": "commit-msg",
+         "args": [
+            ".husky/scripts/commit-msg.sh",
+            "${args}"
+         ]
+      },
+      {
+         "name": "Upsert changelog",
+         "command": "bash",
+         "group": "pre-commit",
+         "args": [
+            ".husky/scripts/changelog.sh"
+         ]
+      },
+      {
+         "name": "Code Formatting",
+         "command": "dotnet",
+         "group": "pre-commit",
+         "args": [
+            "format"
+         ]
+      }
+   ]
+}

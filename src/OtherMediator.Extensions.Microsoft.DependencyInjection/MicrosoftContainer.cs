@@ -28,7 +28,7 @@ public class MicrosoftContainer(IServiceCollection? services) : IContainer
         return _provider;
     }
 
-    public void RegisterInstance<TService, TImplementation>(Lifetime lifetime) where TImplementation : TService
+    public void Register<TService, TImplementation>(Lifetime lifetime) where TImplementation : TService
     {
         if (_provider is not null)
         {

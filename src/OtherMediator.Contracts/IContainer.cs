@@ -2,7 +2,7 @@
 
 public interface IContainer
 {
-    void RegisterInstance<TService, TImplementation>(Lifetime lifetime) where TImplementation : TService;
+    void Register<TService, TImplementation>(Lifetime lifetime) where TImplementation : TService;
 
     TService Resolve<TService>();
 
