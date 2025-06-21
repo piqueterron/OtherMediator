@@ -33,6 +33,9 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
         var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
+
+        handlers ??= Enumerable.Empty<INotificationHandler<TNotification>>();
+
         var tasks = handlers.Select(handler => handler.Handle(notification, cancellationToken));
 
         await Task.WhenAll(tasks);
@@ -52,7 +55,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     /// <returns>
     /// A task that represents the asynchronous send operation, containing the response from the handler.
     /// </returns>
-    /// <exception cref="ArgumentNullException">Thrown if the request is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
     public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest<TResponse>
     {
@@ -61,7 +64,14 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
         var sender = (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(typeof(TRequest), _ =>
         {
             var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
+
+            if (handler is null)
+            {
+                throw new ArgumentNullException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
+            }
+
             var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
+            pipelines ??= Enumerable.Empty<IPipelineBehavior<TRequest, TResponse>>();
 
             return _pipeline.BuildPipeline(handler, pipelines);
         });
