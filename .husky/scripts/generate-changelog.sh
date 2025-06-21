@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 
 set -eo pipefail
 trap 'echo "❌ Error line $LINENO"; exit 1' ERR
