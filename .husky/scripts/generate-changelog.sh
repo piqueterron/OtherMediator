@@ -18,7 +18,7 @@ LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 TODAY=$(date +"%Y-%m-%d")
 
 if [ -z "$LAST_TAG" ]; then
-    echo "ℹ️ Not found tag. Extract all commits."
+    echo "ℹ️ Extract commits."
     COMMITS=$(git log --pretty=format:"%h|%an|%s" || true)
     VERSION="Unreleased"
 else
@@ -27,7 +27,7 @@ else
 fi
 
 if [ -z "$COMMITS" ]; then
-    echo "⚠️ No commits found to generate changelog."
+    echo "⚠️ No se encontraron commits para generar el changelog."
     exit 0
 fi
 
@@ -48,7 +48,7 @@ PERF_COUNT=$(count_type "perf")
 {
     echo "## [$VERSION] - $TODAY"
     echo
-    echo "**Change Summary:**"
+    echo "**Resumen de cambios:**"
     echo
     echo "- 🚀 Features: $FEAT_COUNT"
     echo "- 🐛 Bug Fixes: $FIX_COUNT"
@@ -72,9 +72,9 @@ append_commits() {
     local commits_array=()
     mapfile -t commits_array <<< "$COMMITS"
 
-    echo "Processing $TYPE commits..."
+    echo "Processing commits $TYPE..."
     for line in "${commits_array[@]}"; do
-        echo "Line: $line"
+        echo "Linea: $line"
         if echo "$line" | grep -qE "^\w+\|[^|]+\|$TYPE(\([^)]+\))?: .+"; then
             if [ "$heading_printed" = false ]; then
                 echo "### $EMOJI $HEADING" >> "$TEMP_FILE"
@@ -106,14 +106,14 @@ append_commits "perf" "Performance" "⚡"
 
 BREAKING=$(git log ${LAST_TAG:+$LAST_TAG..HEAD} --pretty=format:"%b" | grep -i "BREAKING CHANGE:" || true)
 if [ -n "$BREAKING" ]; then
-    echo "### ⚠️ Breaking Changes" >> "$TEMP_FILE"
+    echo "### ⚠️ Breaking changes" >> "$TEMP_FILE"
     echo "$BREAKING" | sed -E "s|.*BREAKING CHANGE: (.+)|- \1|" >> "$TEMP_FILE"
     echo >> "$TEMP_FILE"
 fi
 
 OTHERS=$(echo "$COMMITS" | grep -Ev "^\w+\|[^|]+\|(feat|fix|docs|refactor|test|chore|style|perf)(\([^)]+\))?: .+" || true)
 if [ -n "$OTHERS" ]; then
-    echo "### Other changes" >> "$TEMP_FILE"
+    echo "### Otros cambios" >> "$TEMP_FILE"
     echo "$OTHERS" | while IFS= read -r line; do
         COMMIT_HASH=$(echo "$line" | cut -d'|' -f1)
         AUTHOR=$(echo "$line" | cut -d'|' -f2)
@@ -126,7 +126,11 @@ if [ -n "$OTHERS" ]; then
 fi
 
 if [ -f "$CHANGELOG_FILE" ]; then
-    cat "$CHANGELOG_FILE" >> "$TEMP_FILE"
+    if ! grep -q "## \[$VERSION\] - $TODAY" "$CHANGELOG_FILE"; then
+        cat "$CHANGELOG_FILE" >> "$TEMP_FILE"
+    else
+        echo "ℹ️ Version: $VERSION already CHANGELOG.md."
+    fi
 fi
 
 mv "$TEMP_FILE" "$CHANGELOG_FILE"
