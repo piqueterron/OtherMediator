@@ -11,11 +11,11 @@
          ]
       },
       {
-         "name": "Upsert changelog",
+         "name": "Generate and push changelog",
          "command": "bash",
          "group": "pre-commit",
          "args": [
-            ".husky/scripts/changelog.sh"
+            ".husky/scripts/update-changelog-and-push.sh"
          ]
       },
       {
