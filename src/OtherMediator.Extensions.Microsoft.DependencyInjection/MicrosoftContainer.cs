@@ -24,7 +24,7 @@ public class MicrosoftContainer(IServiceCollection? services) : IContainer
         {
             _provider = _services.BuildServiceProvider();
         }
-        
+
         return _provider;
     }
 

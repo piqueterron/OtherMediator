@@ -54,7 +54,7 @@ public class MediatorConfiguration
         foreach (var assembly in assemblies)
         {
             Type[] types;
-            
+
             try
             {
                 types = assembly.GetTypes();
@@ -138,7 +138,7 @@ public class MediatorConfiguration
         }
 
         var serviceType = typeof(IPipelineBehavior<TRequest, TResponse>);
-            
+
         if (!_services.Any(s => s.ServiceType == serviceType && s.ImplementationType == type))
         {
             _services.Add(new ServiceDescriptor(serviceType, type, _lifetime));
