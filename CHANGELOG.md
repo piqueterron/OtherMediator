@@ -5,7 +5,7 @@
 - 🚀 Features: 7
 - 🐛 Bug Fixes: 3
 - 📚 Documentation: 0
-- 🛠️ Refactoring: 6
+- 🛠️ Refactoring: 7
 - 🧪 Tests: 0
 - 🔧 Chores: 0
 - 🎨 Code Style: 0
@@ -46,6 +46,9 @@
   `[924dd1206ddfeb1dd5dd62b155b07a0045faee42]` by Erik Pique
 
 ### 🛠️ Refactoring
+- update script changelog
+  `[3518c9c9f5b10fc9e080d21364115581485aca6b]` by Erik Pique
+
 - update script changelog
   `[851fe165632bee259f3e470d614b9ba86ca0f6a4]` by Erik Pique
 
