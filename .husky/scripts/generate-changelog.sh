@@ -1,24 +1,31 @@
 #!/bin/sh
 
 set -eo pipefail
-trap 'echo "❌ Error line $LINENO"; exit 1' ERR
+trap 'echo "❌ Error on line $LINENO"; exit 1' ERR
 
-echo "📝 Generating CHANGELOG.md..."
-echo "📍 Working directory: $(pwd)"
-echo "📍 Date: $(date)"
-echo "📍 Files:"
-ls -lA
-
+# Initial configuration
 CHANGELOG_FILE="CHANGELOG.md"
 TEMP_FILE="CHANGELOG_TEMP.md"
-
 REPO_URL="https://github.com/piqueterron/OtherMediator"
-
-LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 TODAY=$(date +"%Y-%m-%d")
 
+# Debug information
+echo "📝 Generating CHANGELOG.md..."
+echo "📍 Working directory: $(pwd)"
+echo "📍 Date: $TODAY"
+echo "📍 Files in directory:"
+ls -lA
+
+# Verify we're in a Git repository
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "❌ Error: This script must be run inside a Git repository"
+    exit 1
+fi
+
+# Get version information
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 if [ -z "$LAST_TAG" ]; then
-    echo "ℹ️ Extract commits."
+    echo "ℹ️ No tags found in repository. Using all commits."
     COMMITS=$(git log --pretty=format:"%h|%an|%s" || true)
     VERSION="Unreleased"
 else
@@ -27,15 +34,17 @@ else
 fi
 
 if [ -z "$COMMITS" ]; then
-    echo "⚠️ No commits were found to generate the changelog."
+    echo "⚠️ No commits found to generate changelog."
     exit 0
 fi
 
+# Function to count commit types
 count_type() {
-    local type="$1"
-    echo "$COMMITS" | grep -cE "^[^|]+\|[^|]+\|${type}(\([^)]+\))?: " || echo ""
+    type="$1"
+    echo "$COMMITS" | grep -cE "^[^|]+\|[^|]+\|${type}(\([^)]+\))?: " || echo "0"
 }
 
+# Count commits by type
 FEAT_COUNT=$(count_type "feat")
 FIX_COUNT=$(count_type "fix")
 DOCS_COUNT=$(count_type "docs")
@@ -45,6 +54,7 @@ CHORE_COUNT=$(count_type "chore")
 STYLE_COUNT=$(count_type "style")
 PERF_COUNT=$(count_type "perf")
 
+# Create changelog header
 {
     echo "## [$VERSION] - $TODAY"
     echo
@@ -63,38 +73,40 @@ PERF_COUNT=$(count_type "perf")
     echo
 } > "$TEMP_FILE"
 
+# Function to append commits to changelog
 append_commits() {
     TYPE="$1"
     HEADING="$2"
     EMOJI="$3"
+    heading_printed=false
 
-    local heading_printed=false
-    local commits_array=()
-    mapfile -t commits_array <<< "$COMMITS"
+    # Only process if there are commits of this type
+    if [ "$(count_type "$TYPE")" -eq 0 ]; then
+        return
+    fi
 
-    echo "Processing commits $TYPE..."
-    for line in "${commits_array[@]}"; do
-        echo "Linea: $line"
-        if echo "$line" | grep -qE "^\w+\|[^|]+\|$TYPE(\([^)]+\))?: .+"; then
+    echo "$COMMITS" | while IFS= read -r line; do
+        if echo "$line" | grep -qE "^[^|]+\|[^|]+\|${TYPE}(\([^)]+\))?: "; then
             if [ "$heading_printed" = false ]; then
                 echo "### $EMOJI $HEADING" >> "$TEMP_FILE"
                 heading_printed=true
             fi
 
-            COMMIT_HASH=$(echo "$line" | cut -d'|' -f1)
-            AUTHOR=$(echo "$line" | cut -d'|' -f2)
-            MESSAGE=$(echo "$line" | cut -d'|' -f3-)
+            commit_hash=$(echo "$line" | cut -d'|' -f1)
+            author=$(echo "$line" | cut -d'|' -f2)
+            message=$(echo "$line" | cut -d'|' -f3- | sed -E "s/^${TYPE}(\([^)]+\))?: //")
+            
+            # Link issue numbers in message
+            linked_message=$(echo "$message" | sed -E "s|#([0-9]+)|[#\1]($REPO_URL/issues/\1)|g")
 
-            CLEAN_MESSAGE=$(echo "$MESSAGE" | sed -E "s|^$TYPE(\([^)]+\))?: ||")
-            LINKED_MESSAGE=$(echo "$CLEAN_MESSAGE" | sed -E "s|#([0-9]+)|[#\1]($REPO_URL/issues/\1)|g")
-
-            echo "- $LINKED_MESSAGE" >> "$TEMP_FILE"
-            echo "  \`[$COMMIT_HASH]($REPO_URL/commit/$COMMIT_HASH)\` by $AUTHOR" >> "$TEMP_FILE"
+            echo "- $linked_message" >> "$TEMP_FILE"
+            echo "  \`[$commit_hash]($REPO_URL/commit/$commit_hash)\` by $author" >> "$TEMP_FILE"
             echo >> "$TEMP_FILE"
         fi
     done
 }
 
+# Process each commit type
 append_commits "feat" "Features" "🚀"
 append_commits "fix" "Bug Fixes" "🐛"
 append_commits "docs" "Documentation" "📚"
@@ -104,35 +116,42 @@ append_commits "chore" "Chores" "🔧"
 append_commits "style" "Code Style" "🎨"
 append_commits "perf" "Performance" "⚡"
 
+# Process breaking changes
 BREAKING=$(git log ${LAST_TAG:+$LAST_TAG..HEAD} --pretty=format:"%b" | grep -i "BREAKING CHANGE:" || true)
 if [ -n "$BREAKING" ]; then
-    echo "### ⚠️ Breaking changes" >> "$TEMP_FILE"
+    echo "### ⚠️ Breaking Changes" >> "$TEMP_FILE"
     echo "$BREAKING" | sed -E "s|.*BREAKING CHANGE: (.+)|- \1|" >> "$TEMP_FILE"
     echo >> "$TEMP_FILE"
 fi
 
-OTHERS=$(echo "$COMMITS" | grep -Ev "^\w+\|[^|]+\|(feat|fix|docs|refactor|test|chore|style|perf)(\([^)]+\))?: .+" || true)
+# Process other changes
+OTHERS=$(echo "$COMMITS" | grep -Ev "^[^|]+\|[^|]+\|(feat|fix|docs|refactor|test|chore|style|perf)(\([^)]+\))?: " || true)
 if [ -n "$OTHERS" ]; then
-    echo "### Other changes" >> "$TEMP_FILE"
+    echo "### Other Changes" >> "$TEMP_FILE"
     echo "$OTHERS" | while IFS= read -r line; do
-        COMMIT_HASH=$(echo "$line" | cut -d'|' -f1)
-        AUTHOR=$(echo "$line" | cut -d'|' -f2)
-        MESSAGE=$(echo "$line" | cut -d'|' -f3-)
+        commit_hash=$(echo "$line" | cut -d'|' -f1)
+        author=$(echo "$line" | cut -d'|' -f2)
+        message=$(echo "$line" | cut -d'|' -f3-)
         
-        echo "- $MESSAGE" >> "$TEMP_FILE"
-        echo "  \`[$COMMIT_HASH]($REPO_URL/commit/$COMMIT_HASH)\` by $AUTHOR" >> "$TEMP_FILE"
+        echo "- $message" >> "$TEMP_FILE"
+        echo "  \`[$commit_hash]($REPO_URL/commit/$commit_hash)\` by $author" >> "$TEMP_FILE"
     done
     echo >> "$TEMP_FILE"
 fi
 
+# Merge with existing CHANGELOG if this version isn't already present
 if [ -f "$CHANGELOG_FILE" ]; then
     if ! grep -q "## \[$VERSION\] - $TODAY" "$CHANGELOG_FILE"; then
-        cat "$CHANGELOG_FILE" >> "$TEMP_FILE"
+        echo "🔗 Appending to existing CHANGELOG..."
+        {
+            echo ""
+            cat "$CHANGELOG_FILE"
+        } >> "$TEMP_FILE"
     else
-        echo "ℹ️ Version: $VERSION already CHANGELOG.md."
+        echo "ℹ️ Version $VERSION already exists in CHANGELOG.md, skipping duplicate."
     fi
 fi
 
+# Replace file
 mv "$TEMP_FILE" "$CHANGELOG_FILE"
-
-echo "✅ CHANGELOG.md update version: [$VERSION]"
+echo "✅ CHANGELOG.md successfully updated for version: [$VERSION]"
