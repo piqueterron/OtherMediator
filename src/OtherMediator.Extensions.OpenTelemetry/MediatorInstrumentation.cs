@@ -8,7 +8,7 @@ public class MediatorInstrumentation
     public const string SERVICE_NAME = "Mediator";
     public const string SERVICE_VERSION = "0.1.0";
 
-    private static IEnumerable<KeyValuePair<string, object?>> _tags = 
+    private static IEnumerable<KeyValuePair<string, object?>> _tags =
         [
             new KeyValuePair<string, object?>("test", 1)
         ];
