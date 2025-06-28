@@ -6,4 +6,8 @@
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OtherMediator\OtherMediator.csproj" />
+  </ItemGroup>
+
 </Project>

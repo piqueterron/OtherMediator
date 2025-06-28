@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <ProjectReference Include="..\OtherMediator.Extensions.Microsoft.DependencyInjection\OtherMediator.Extensions.Microsoft.DependencyInjection.csproj" />
+    <ProjectReference Include="..\OtherMediator.Extensions.OpenTelemetry\OtherMediator.Extensions.OpenTelemetry.csproj" />
   </ItemGroup>
 
 </Project>
