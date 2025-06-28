@@ -2,7 +2,7 @@
 
 **Change Summary:**
 
-- 🚀 Features: 9
+- 🚀 Features: 10
 - 🐛 Bug Fixes: 3
 - 📚 Documentation: 0
 - 🛠️ Refactoring: 7
@@ -14,6 +14,9 @@
 ---
 
 ### 🚀 Features
+- up otl clases
+  `[a7e50e8c01c880396bedd91137286b93dfc6eef1]` by Erik Pique
+
 - add otl to senders
   `[27ccd04ce53e7e2ee616e7e24efaa778b79d558e]` by Erik Pique
 
