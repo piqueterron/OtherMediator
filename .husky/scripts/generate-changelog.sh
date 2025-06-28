@@ -35,8 +35,12 @@ fi
 declare FEATS FIXES DOCS REFACTORS TESTS CHORES STYLES PERFS BREAKINGS OTHERS
 FEAT_COUNT=0; FIX_COUNT=0; DOCS_COUNT=0; REFACTOR_COUNT=0; TEST_COUNT=0; CHORE_COUNT=0; STYLE_COUNT=0; PERF_COUNT=0; BREAKING_COUNT=0
 
-# Procesa todos los commits una sola vez
+export TEMP_FILE VERSION TODAY
+
 echo "$COMMITS" | awk -F'|' -v repo_url="$REPO_URL" '
+BEGIN {
+    fc=fic=dc=rc=tc=cc=sc=pc=bc=oc=0
+}
 function print_commit(arr, ctype, emoji, heading) {
     if (length(arr) > 0) {
         print "### " emoji " " heading "\n" >> ENVIRON["TEMP_FILE"]
@@ -48,15 +52,12 @@ function print_commit(arr, ctype, emoji, heading) {
 }
 {
     hash=$1; author=$2; subject=$3; body=$4
-    # Quita tipo y paréntesis del subject
     match(subject, /^([a-zA-Z]+)(\([^\)]+\))?:[ ]?/, m)
     type = m[1]
     msg = subject
     gsub(/^([a-zA-Z]+)(\([^\)]+\))?:[ ]?/, "", msg)
-    # Enlaza #123 a issues
     gsub(/#([0-9]+)/, "[#\\1]("repo_url"/issues/\\1)", msg)
-    line="- " msg "\n  \`[" hash "]\` by " author
-    # Clasifica por tipo
+    line="- " msg "\n  [`" hash "`] by " author
     if (type == "feat")      { feats[++fc]=line; FEAT_COUNT++ }
     else if (type == "fix")  { fixes[++fic]=line; FIX_COUNT++ }
     else if (type == "docs") { docs[++dc]=line; DOCS_COUNT++ }
@@ -66,14 +67,12 @@ function print_commit(arr, ctype, emoji, heading) {
     else if (type == "style") { styles[++sc]=line; STYLE_COUNT++ }
     else if (type == "perf")  { perfs[++pc]=line; PERF_COUNT++ }
     else                      { others[++oc]=line }
-    # Breaking changes (en body)
     if (tolower(body) ~ /breaking change:/) {
         match(body, /[Bb][Rr][Ee][Aa][Kk][Ii][Nn][Gg] [Cc][Hh][Aa][Nn][Gg][Ee]:[ ]*(.*)/, b)
         if (b[1] != "") breakings[++bc]="- " b[1]
     }
 }
 END {
-    # Output resumen
     print "## [" ENVIRON["VERSION"] "] - " ENVIRON["TODAY"] "\n" > ENVIRON["TEMP_FILE"]
     print "**Change Summary:**\n" >> ENVIRON["TEMP_FILE"]
     print "- 🚀 Features: " FEAT_COUNT >> ENVIRON["TEMP_FILE"]
@@ -85,7 +84,6 @@ END {
     print "- 🎨 Code Style: " STYLE_COUNT >> ENVIRON["TEMP_FILE"]
     print "- ⚡ Performance: " PERF_COUNT "\n" >> ENVIRON["TEMP_FILE"]
     print "---\n" >> ENVIRON["TEMP_FILE"]
-    # Por tipo
     print_commit(feats, "feat", "🚀", "Features")
     print_commit(fixes, "fix", "🐛", "Bug Fixes")
     print_commit(docs, "docs", "📚", "Documentation")
@@ -94,7 +92,6 @@ END {
     print_commit(chores, "chore", "🔧", "Chores")
     print_commit(styles, "style", "🎨", "Code Style")
     print_commit(perfs, "perf", "⚡", "Performance")
-    # Breaking changes
     if (length(breakings) > 0) {
         print "### ⚠️ Breaking Changes\n" >> ENVIRON["TEMP_FILE"]
         for (i = 1; i <= length(breakings); i++) {
@@ -102,7 +99,6 @@ END {
         }
         print "" >> ENVIRON["TEMP_FILE"]
     }
-    # Otros
     if (length(others) > 0) {
         print "### Other Changes\n" >> ENVIRON["TEMP_FILE"]
         for (i = 1; i <= length(others); i++) {

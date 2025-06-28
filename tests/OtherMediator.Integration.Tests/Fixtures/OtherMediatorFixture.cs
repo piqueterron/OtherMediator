@@ -1,7 +1,6 @@
 ﻿namespace OtherMediator.Integration.Tests.Fixtures;
 
 using System.Threading.Tasks;
-using DotNet.Testcontainers.Builders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -19,30 +18,6 @@ public class OtherMediatorFixture : IAsyncLifetime
 {
     private DotNet.Testcontainers.Containers.IContainer _jaeger;
 
-    public static class JaegerPort
-    {
-        public static (int Host, int Container) UI = (16686, 16686);
-        public static (int Host, int Container) OtlGrpc = (4317, 4317);
-        public static (int Host, int Container) OtlHttp = (4318, 4318);
-        public static (int Host, int Container) Grpc = (14250, 14250);
-    }
-
-    public OtherMediatorFixture()
-    {
-        _jaeger = new ContainerBuilder()
-            .WithImage("jaegertracing/all-in-one:latest")
-            .WithName("jaeger")
-            .WithPortBinding(JaegerPort.UI.Host, JaegerPort.UI.Container)
-            .WithPortBinding(JaegerPort.OtlGrpc.Host, JaegerPort.OtlGrpc.Container)
-            .WithPortBinding(JaegerPort.OtlHttp.Host, JaegerPort.OtlHttp.Container)
-            .WithPortBinding(JaegerPort.Grpc.Host, JaegerPort.Grpc.Container)
-            .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true")
-            .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(JaegerPort.UI.Container)
-                .UntilPortIsAvailable(JaegerPort.OtlGrpc.Container))
-            .Build();
-    }
-
     public TestServer ApiServer()
     {
         var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
@@ -51,7 +26,7 @@ public class OtherMediatorFixture : IAsyncLifetime
             EnvironmentName = Environments.Development
         });
 
-        var otlpEndpoint = new Uri($"http://localhost:{_jaeger.GetMappedPublicPort(JaegerPort.OtlGrpc.Container)}");
+        var otlpEndpoint = new Uri($"http://localhost:{_jaeger.GetMappedPublicPort(JaegerPort.OTL_GRPC)}");
 
         builder.Services
             .AddRouting()
@@ -88,12 +63,10 @@ public class OtherMediatorFixture : IAsyncLifetime
         var app = builder.Build();
 
         app.UseRouting();
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapGet("/mediator", async (IMediator mediator) =>
-                await mediator.Send<TestRequest, TestResponse>(new TestRequest()));
-        });
-
+        
+        app.MapPost("/mediator", async (IMediator mediator) => 
+            await mediator.Send<TestRequest, TestResponse>(new TestRequest()));
+        
         app.Start();
 
         return app.GetTestServer();
@@ -107,6 +80,7 @@ public class OtherMediatorFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        _jaeger = JaegerContainer.JaegerInitialize();
         await _jaeger.StartAsync();
     }
 }

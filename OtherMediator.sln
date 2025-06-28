@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0B2560B7
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherMediator.Integration.Tests", "tests\OtherMediator.Integration.Tests\OtherMediator.Integration.Tests.csproj", "{8B95EA11-EE5E-4E9F-AD0E-4B20D130D992}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtherMediator.Integration", "tests\OtherMediator.Integration\OtherMediator.Integration.csproj", "{71E5D7F2-BF0E-4349-AA1D-F67ACAD448AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{8B95EA11-EE5E-4E9F-AD0E-4B20D130D992}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8B95EA11-EE5E-4E9F-AD0E-4B20D130D992}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8B95EA11-EE5E-4E9F-AD0E-4B20D130D992}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71E5D7F2-BF0E-4349-AA1D-F67ACAD448AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71E5D7F2-BF0E-4349-AA1D-F67ACAD448AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71E5D7F2-BF0E-4349-AA1D-F67ACAD448AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71E5D7F2-BF0E-4349-AA1D-F67ACAD448AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{BCD3EBF9-AC78-4A71-8F9A-BE68ACBE1C2E} = {A3FCDD7C-61A3-4F05-9F8E-9FB47593BA5D}
 		{4D35ACDD-DF9C-4994-82EA-EEE2E6DF97DD} = {A3FCDD7C-61A3-4F05-9F8E-9FB47593BA5D}
 		{8B95EA11-EE5E-4E9F-AD0E-4B20D130D992} = {0B2560B7-66D0-45FB-A6D6-E1AFCD176D90}
+		{71E5D7F2-BF0E-4349-AA1D-F67ACAD448AB} = {0B2560B7-66D0-45FB-A6D6-E1AFCD176D90}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8A146523-F991-4305-B24E-4CA9EA87E4FF}
