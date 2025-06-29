@@ -2,8 +2,8 @@
 
 using global::Microsoft.Extensions.DependencyInjection;
 using global::OpenTelemetry.Metrics;
-using global::OpenTelemetry.Resources;
 using global::OpenTelemetry.Trace;
+using OtherMediator.Contracts;
 using OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 public static class OtherMediatorOpenTelemetryExtensions
@@ -16,14 +16,10 @@ public static class OtherMediatorOpenTelemetryExtensions
 
         var config = new MediatorConfiguration(services);
 
-        config.AddOpenPipelineBehavior(typeof(OpenTelemetryPipelineBehavior<,>));
-
-        services.AddOpenTelemetry()
-            .ConfigureResource(resource =>
-            {
-                resource.AddService(MediatorInstrumentation.SERVICE_NAME, serviceVersion: MediatorInstrumentation.SERVICE_VERSION);
-                resource.AddAttributes(attributes);
-            });
+        if (!services.Any((ServiceDescriptor d) => d.ServiceType == typeof(IPipelineBehavior<,>) && d.ImplementationType == typeof(OpenTelemetryPipelineBehavior<,>)))
+        {
+            services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(OpenTelemetryPipelineBehavior<,>), config.Lifetime));
+        }
 
         return services;
     }

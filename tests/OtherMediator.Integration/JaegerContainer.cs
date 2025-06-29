@@ -9,7 +9,7 @@ public class JaegerContainer
     {
         return new ContainerBuilder()
             .WithImage("jaegertracing/all-in-one:latest")
-            .WithName("jaeger")
+            .WithName($"jaeger-{Guid.NewGuid()}")
             .WithPortBinding(JaegerPort.UI, JaegerPort.UI)
             .WithPortBinding(JaegerPort.OTL_GRPC, true)
             .WithPortBinding(JaegerPort.OTL_HTTP, true)

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OtherMediator.Contracts;
 using OtherMediator.Extensions.Microsoft.DependencyInjection;
@@ -17,24 +18,39 @@ using Xunit;
 public class OtherMediatorFixture : IAsyncLifetime
 {
     private DotNet.Testcontainers.Containers.IContainer _jaeger;
+    private readonly Lazy<TestServer> _testServer;
 
-    public TestServer ApiServer()
+    public TestServer Server => _testServer.Value;
+
+    public OtherMediatorFixture()
+    {
+        _testServer = new Lazy<TestServer>(CreateApiServer);
+    }
+
+    private TestServer CreateApiServer()
     {
         var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
         {
-            ApplicationName = typeof(OtherMediatorFixture).Assembly.FullName,
+            ApplicationName = "OtherMediator.Test",
             EnvironmentName = Environments.Development
         });
 
         var otlpEndpoint = new Uri($"http://localhost:{_jaeger.GetMappedPublicPort(JaegerPort.OTL_GRPC)}");
+        var version = typeof(OtherMediatorFixture).Assembly.GetName()?.Version!.ToString();
 
         builder.Services
             .AddRouting()
             .AddOpenTelemetry()
+            .ConfigureResource(resource => resource
+                .AddService(builder.Environment.ApplicationName, serviceVersion: version)
+                .AddAttributes(new Dictionary<string, object>
+                {
+                    ["service.instance.id"] = Guid.NewGuid().ToString(),
+                    ["deployment.environment"] = builder.Environment.EnvironmentName
+                }))
             .WithTracing(trace =>
             {
-                trace.AddSource(nameof(OtherMediatorFixture))
-                    .AddMediatorInstrumentation()
+                trace.AddMediatorInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddOtlpExporter(options =>
                     {
@@ -44,8 +60,7 @@ public class OtherMediatorFixture : IAsyncLifetime
             })
             .WithMetrics(metric =>
             {
-                metric.AddMeter(nameof(OtherMediatorFixture))
-                    .AddMediatorInstrumentation()
+                metric.AddMediatorInstrumentation()
                     .AddAspNetCoreInstrumentation()
                     .AddOtlpExporter(options =>
                     {
@@ -55,7 +70,11 @@ public class OtherMediatorFixture : IAsyncLifetime
             });
 
         builder.Services
-            .AddMediator(config => config.RegisterServicesFromAssembly<OtherMediatorFixture>())
+            .AddMediator(config =>
+            {
+                config.RegisterServicesFromAssembly<OtherMediatorFixture>();
+                config.AddOpenPipelineBehavior(typeof(TestPipeline<,>));
+            })
             .AddMediatorOpenTelemetry();
 
         builder.WebHost.UseTestServer();
@@ -64,7 +83,7 @@ public class OtherMediatorFixture : IAsyncLifetime
 
         app.UseRouting();
 
-        app.MapPost("/mediator", async (IMediator mediator) =>
+        app.MapGet("/mediator", async (IMediator mediator) =>
             await mediator.Send<TestRequest, TestResponse>(new TestRequest()));
 
         app.Start();
