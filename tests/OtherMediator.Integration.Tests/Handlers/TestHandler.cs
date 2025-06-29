@@ -14,7 +14,7 @@ public class TestHandler : IRequestHandler<TestRequest, TestResponse>
 }
 
 public class TestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    where TRequest: IRequest<TResponse>
+    where TRequest : IRequest<TResponse>
 {
     public async Task<TResponse> Handle(TRequest request, Func<TRequest, CancellationToken, Task<TResponse>> next, CancellationToken cancellationToken)
     {
