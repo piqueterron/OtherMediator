@@ -18,22 +18,19 @@ using Xunit;
 public class OtherMediatorFixture : IAsyncLifetime
 {
     private DotNet.Testcontainers.Containers.IContainer _jaeger;
-    private readonly Lazy<TestServer> _testServer;
 
-    public TestServer Server => _testServer.Value;
-
-    public OtherMediatorFixture()
-    {
-        _testServer = new Lazy<TestServer>(CreateApiServer);
-    }
-
-    private TestServer CreateApiServer()
+    public TestServer CreateApiServer()
     {
         var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
         {
             ApplicationName = "OtherMediator.Test",
             EnvironmentName = Environments.Development
         });
+
+        if (_jaeger is null)
+        {
+            throw new InvalidOperationException("Jaeger container not initialized. Did you call InitializeAsync()?");
+        }
 
         var otlpEndpoint = new Uri($"http://localhost:{_jaeger.GetMappedPublicPort(JaegerPort.OTL_GRPC)}");
         var version = typeof(OtherMediatorFixture).Assembly.GetName()?.Version!.ToString();
@@ -46,7 +43,8 @@ public class OtherMediatorFixture : IAsyncLifetime
                 .AddAttributes(new Dictionary<string, object>
                 {
                     ["service.instance.id"] = Guid.NewGuid().ToString(),
-                    ["deployment.environment"] = builder.Environment.EnvironmentName
+                    ["deployment.environment.name"] = builder.Environment.EnvironmentName,
+                    ["host.name"] = Environment.MachineName
                 }))
             .WithTracing(trace =>
             {

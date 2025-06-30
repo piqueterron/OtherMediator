@@ -38,14 +38,17 @@ public class OpenTelemetryPipelineBehavior<TRequest, TResponse> : IPipelineBehav
             var response = await next(request, cancellationToken);
 
             activity?.SetTag("response.type", typeof(TResponse).FullName!);
+
             _logger.LogInformation("Handled request {RequestName} with response type {ResponseType}", requestName, typeof(TResponse).FullName);
+
+            activity?.SetStatus(ActivityStatusCode.Ok);
 
             return response;
         }
         catch (Exception ex)
         {
-            activity?.SetTag("error", true);
-            activity?.SetTag("exception.message", ex.Message);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "Error handling request {RequestName}", requestName);
 
