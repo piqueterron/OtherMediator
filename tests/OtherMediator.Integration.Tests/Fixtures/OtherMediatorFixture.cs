@@ -2,7 +2,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -17,9 +16,14 @@ using Xunit;
 
 public class OtherMediatorFixture : IAsyncLifetime
 {
-    private DotNet.Testcontainers.Containers.IContainer _jaeger;
+    private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public TestServer CreateApiServer()
+    private DotNet.Testcontainers.Containers.IContainer _jaeger;
+    private TestServer _testServer;
+
+    public HttpClient Client => _testServer.CreateClient();
+
+    private async Task<TestServer> CreateApiServerAsync()
     {
         var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
         {
@@ -29,7 +33,7 @@ public class OtherMediatorFixture : IAsyncLifetime
 
         if (_jaeger is null)
         {
-            throw new InvalidOperationException("Jaeger container not initialized. Did you call InitializeAsync()?");
+            throw new InvalidOperationException("Jaeger container not initialized.");
         }
 
         var otlpEndpoint = new Uri($"http://localhost:{_jaeger.GetMappedPublicPort(JaegerPort.OTL_GRPC)}");
@@ -81,10 +85,10 @@ public class OtherMediatorFixture : IAsyncLifetime
 
         app.UseRouting();
 
-        app.MapGet("/mediator", async (IMediator mediator) =>
-            await mediator.Send<TestRequest, TestResponse>(new TestRequest()));
+        app.MapPost("/mediator", async (IMediator mediator, TestRequest request) =>
+            await mediator.Send<TestRequest, TestResponse>(request));
 
-        app.Start();
+        await app.StartAsync();
 
         return app.GetTestServer();
     }
@@ -97,7 +101,22 @@ public class OtherMediatorFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _jaeger = JaegerContainer.JaegerInitialize();
-        await _jaeger.StartAsync();
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            if (_testServer is not null)
+            {
+                return;
+            }
+
+            _jaeger = JaegerContainer.JaegerInitialize();
+            await _jaeger.StartAsync();
+            _testServer = await CreateApiServerAsync();
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 }

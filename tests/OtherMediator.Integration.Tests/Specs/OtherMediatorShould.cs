@@ -1,36 +1,43 @@
 ﻿namespace OtherMediator.Integration.Tests.Specs;
 
+using System.Net;
+using System.Net.Http.Json;
 using OtherMediator.Integration.Tests.Fixtures;
+using OtherMediator.Integration.Tests.Handlers;
 using Xunit;
 
 [Trait("OtherMediator", "Integration")]
 [Collection(nameof(OtherMediatorFixtureCollection))]
-public class OtherMediatorShould : IClassFixture<OtherMediatorFixture>
+public class OtherMediatorShould
 {
     private readonly HttpClient _httpClient;
 
     public OtherMediatorShould(OtherMediatorFixture fixture)
     {
-        _httpClient = fixture.CreateApiServer().CreateClient();
+        _httpClient = fixture.Client;
     }
 
-    [Fact]
-    public async Task Test1()
+    [Theory(DisplayName = "Give request when send command found correct handler, should return expected response")]
+    [ClassData(typeof(TestRequestTheory))]
+    public async Task GiveRequest_WhenSendCommandFoundHandler_ShouldReturnExpectedResponse(TestRequest request, HttpStatusCode httpStatusCodeExpected, string valueExpected)
     {
-        await _httpClient.GetAsync("mediator");
+        var response = await _httpClient.PostAsJsonAsync("mediator", request);
 
-        await Task.Delay(10000);
+        Assert.Equal(httpStatusCodeExpected, response.StatusCode);
 
-        Assert.NotNull("");
+        var result = await response.Content.ReadFromJsonAsync<TestResponse>();
+
+        Assert.NotNull(result);
+        Assert.Equal(valueExpected, result.Value);
+        Assert.True(result.Check);
     }
+}
 
-    [Fact]
-    public async Task Test2()
+public class TestRequestTheory : TheoryData<TestRequest, HttpStatusCode, string>
+{
+    public TestRequestTheory()
     {
-        await _httpClient.GetAsync("mediator");
-
-        await Task.Delay(10000);
-
-        Assert.NotNull("");
+        Add(new TestRequest { Value = "TestA" }, HttpStatusCode.OK, "TestA");
+        Add(new TestRequest { Value = "TestB" }, HttpStatusCode.OK, "TestB");
     }
 }

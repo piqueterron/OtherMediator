@@ -7,9 +7,15 @@ using OtherMediator.Contracts;
 
 public class TestHandler : IRequestHandler<TestRequest, TestResponse>
 {
-    public Task<TestResponse> Handle(TestRequest request, CancellationToken cancellationToken = default)
+    public async Task<TestResponse> Handle(TestRequest request, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(new TestResponse());
+        await Task.Delay(1000); //simulating workload
+
+        return new TestResponse
+        {
+            Value = request.Value,
+            Check = true
+        };
     }
 }
 
@@ -24,8 +30,12 @@ public class TestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TRe
 
 public record TestRequest : IRequest<TestResponse>
 {
+    public string Value { get; set; }
 }
 
 public record TestResponse
 {
+    public string Value { get; set; }
+
+    public bool Check { get; set; }
 }
