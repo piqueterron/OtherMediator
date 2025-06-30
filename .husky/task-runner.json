@@ -11,19 +11,19 @@
          ]
       },
       {
-         "name": "Generate and push changelog",
-         "command": "sh",
-         "group": "pre-commit",
-         "args": [
-            ".husky/scripts/update-changelog-and-push.sh"
-         ]
-      },
-      {
          "name": "Code Formatting",
          "command": "dotnet",
          "group": "pre-commit",
          "args": [
             "format"
+         ]
+      },
+      {
+         "name": "Generate and push changelog",
+         "command": "sh",
+         "group": "pre-commit",
+         "args": [
+            ".husky/scripts/update-changelog-and-push.sh"
          ]
       }
    ]

@@ -5,7 +5,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OtherMediator.Contracts\OtherMediator.Contracts.csproj" />
     <ProjectReference Include="..\OtherMediator\OtherMediator.csproj" />
   </ItemGroup>
 
