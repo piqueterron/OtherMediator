@@ -31,6 +31,14 @@ public class OtherMediatorSendShould
         Assert.Equal(valueExpected, result.Value);
         Assert.True(result.Check);
     }
+
+    [Fact(DisplayName = "A request should be given when the command is found to have the correct handler and should return ok.")]
+    public async Task GiveRequest_WhenSendCommandWithoutResponseFoundHandler_ShouldReturnOk()
+    {
+        var response = await _httpClient.PostAsJsonAsync("mediator-void", new TestRequestUnit());
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }
 
 public class TestRequestTheory : TheoryData<TestRequest, HttpStatusCode, string>

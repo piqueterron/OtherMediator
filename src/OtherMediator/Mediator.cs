@@ -1,6 +1,7 @@
 ﻿namespace OtherMediator;
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using OtherMediator.Contracts;
 
 /// <summary>
@@ -27,7 +28,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     /// <param name="cancellationToken">A token to observe while waiting for the tasks to complete.</param>
     /// <returns>A task that represents the asynchronous publish operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown if the notification is null.</exception>
-    public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
+    public async Task Publish<TNotification>([NotNull] TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
@@ -56,12 +57,43 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     /// A task that represents the asynchronous send operation, containing the response from the handler.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
-    public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+    public async Task<TResponse> Send<TRequest, TResponse>([NotNull] TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest<TResponse>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var sender = (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(typeof(TRequest), _ =>
+        var sender = GetOrAddHandler<TRequest, TResponse>();
+
+        return await sender(request, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a request to the appropriate request handler and returns a response asynchronously.
+    /// This method utilizes a middleware pipeline and caches sender delegates for improved performance.
+    /// It resolves the handler and any pipeline behaviors, then executes the request through the pipeline.
+    /// </summary>
+    /// <typeparam name="TRequest">
+    /// The type of the request being sent. Must implement <see cref="IRequest{Unit}"/>.
+    /// </typeparam>
+    /// <typeparam name="Unit">The type of the response expected from the handler.</typeparam>
+    /// <param name="request">The request instance to be sent.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <returns>
+    /// A task that represents the asynchronous send operation, containing the response from the handler.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
+    public async Task<Unit> Send<TRequest>([NotNull] TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest<Unit>
+    {
+        ArgumentNullException.ThrowIfNull(request, nameof(request));
+
+        var sender = GetOrAddHandler<TRequest, Unit>();
+
+        return await sender(request, cancellationToken);
+    }
+
+    private Func<TRequest, CancellationToken, Task<TResponse>> GetOrAddHandler<TRequest, TResponse>() where TRequest : IRequest<TResponse>
+    {
+        return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(typeof(TRequest), _ =>
         {
             var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
 
@@ -75,7 +107,5 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
 
             return _pipeline.BuildPipeline(handler, pipelines);
         });
-
-        return await sender(request, cancellationToken);
     }
 }

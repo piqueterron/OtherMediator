@@ -19,6 +19,16 @@ public class TestSendHandler : IRequestHandler<TestRequest, TestResponse>
     }
 }
 
+public class TestUnitSendHandler : IRequestHandler<TestRequestUnit, Unit>
+{
+    public async Task<Unit> Handle(TestRequestUnit request, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(1000); //simulating workload
+
+        return Unit.Value;
+    }
+}
+
 public class TestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
@@ -26,6 +36,11 @@ public class TestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TRe
     {
         return await next(request, cancellationToken);
     }
+}
+
+public record TestRequestUnit : IRequest
+{
+    public string Value { get; set; }
 }
 
 public record TestRequest : IRequest<TestResponse>
