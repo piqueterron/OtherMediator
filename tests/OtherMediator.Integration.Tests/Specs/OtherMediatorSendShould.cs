@@ -8,16 +8,16 @@ using Xunit;
 
 [Trait("OtherMediator", "Integration")]
 [Collection(nameof(OtherMediatorFixtureCollection))]
-public class OtherMediatorShould
+public class OtherMediatorSendShould
 {
     private readonly HttpClient _httpClient;
 
-    public OtherMediatorShould(OtherMediatorFixture fixture)
+    public OtherMediatorSendShould(OtherMediatorFixture fixture)
     {
         _httpClient = fixture.Client;
     }
 
-    [Theory(DisplayName = "Give request when send command found correct handler, should return expected response")]
+    [Theory(DisplayName = "A request should be given when the command is found to have the correct handler and should return the expected response.")]
     [ClassData(typeof(TestRequestTheory))]
     public async Task GiveRequest_WhenSendCommandFoundHandler_ShouldReturnExpectedResponse(TestRequest request, HttpStatusCode httpStatusCodeExpected, string valueExpected)
     {
