@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using OtherMediator.Contracts;
 
-public class TestHandler : IRequestHandler<TestRequest, TestResponse>
+public class TestSendHandler : IRequestHandler<TestRequest, TestResponse>
 {
     public async Task<TestResponse> Handle(TestRequest request, CancellationToken cancellationToken = default)
     {

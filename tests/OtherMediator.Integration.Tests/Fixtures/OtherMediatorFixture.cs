@@ -88,6 +88,9 @@ public class OtherMediatorFixture : IAsyncLifetime
         app.MapPost("/mediator", async (IMediator mediator, TestRequest request) =>
             await mediator.Send<TestRequest, TestResponse>(request));
 
+        app.MapPost("/notification", async (IMediator mediator, TestNotification request) =>
+            await mediator.Publish(request));
+
         await app.StartAsync();
 
         return app.GetTestServer();
