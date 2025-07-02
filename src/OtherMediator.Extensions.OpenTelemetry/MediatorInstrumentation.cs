@@ -10,7 +10,12 @@ public class MediatorInstrumentation
 
     private static IEnumerable<KeyValuePair<string, object?>> _tags =
         [
-            new KeyValuePair<string, object?>("test", 1)
+            new("library.name", SERVICE_NAME),
+            new("library.version", SERVICE_VERSION),
+            new("library.language", "dotnet"),
+            new("telemetry.sdk.name", "opentelemetry"),
+            new("telemetry.sdk.language", "dotnet"),
+            new("telemetry.sdk.version", "1.12.0"),
         ];
 
     private readonly Counter<long> _counter;

@@ -74,6 +74,8 @@ public class OtherMediatorFixture : IAsyncLifetime
         builder.Services
             .AddMediator(config =>
             {
+                config.Lifetime = ServiceLifetime.Scoped;
+
                 config.RegisterServicesFromAssembly<OtherMediatorFixture>();
                 config.AddOpenPipelineBehavior(typeof(TestPipeline<,>));
             })
@@ -90,6 +92,9 @@ public class OtherMediatorFixture : IAsyncLifetime
 
         app.MapPost("/mediator-void", async (IMediator mediator, TestRequestUnit request) =>
             await mediator.Send(request));
+
+        app.MapPost("/mediator-exception", async (IMediator mediator, TestExceptionRequest request) =>
+            await mediator.Send<TestExceptionRequest, TestResponse>(request));
 
         app.MapPost("/notification", async (IMediator mediator, TestNotification request) =>
             await mediator.Publish(request));
