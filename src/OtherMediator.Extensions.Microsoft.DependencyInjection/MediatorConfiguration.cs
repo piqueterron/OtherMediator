@@ -22,13 +22,18 @@ public class MediatorConfiguration
     }
 
     /// <summary>
-    /// Gets or sets the default service lifetime for handler registrations.
+    /// Gets or sets the default service lifetime for handler registrations, by default Transient.
     /// </summary>
     public ServiceLifetime Lifetime
     {
         get => _lifetime;
         set => _lifetime = value;
     }
+
+    /// <summary>
+    /// Adds a middleware to the pipeline that will catch exceptions, by default true.
+    /// </summary>
+    public bool UseExceptionHandler { get; set; } = true;
 
     /// <summary>
     /// Registers all handler services from the assembly containing <typeparamref name="TAssembly"/>.

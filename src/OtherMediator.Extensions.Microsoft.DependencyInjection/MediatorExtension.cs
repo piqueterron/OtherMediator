@@ -18,6 +18,14 @@ public static class MediatorExtension
             config(mediatorConfig);
         }
 
+        if (mediatorConfig.UseExceptionHandler)
+        {
+            if (!services.Any((ServiceDescriptor d) => d.ServiceType == typeof(IPipelineBehavior<,>) && d.ImplementationType == typeof(ErrorPipelineBehavior<,>)))
+            {
+                services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(ErrorPipelineBehavior<,>), mediatorConfig.Lifetime));
+            }
+        }
+
         services.AddCoreMediator();
 
         return services;

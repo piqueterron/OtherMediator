@@ -6,7 +6,7 @@ using OtherMediator.Integration.Tests.Fixtures;
 using OtherMediator.Integration.Tests.Handlers;
 using Xunit;
 
-[Trait("OtherMediator", "Integration")]
+[Trait("OtherMediator", "Send")]
 [Collection(nameof(OtherMediatorFixtureCollection))]
 public class OtherMediatorSendShould
 {
@@ -17,7 +17,7 @@ public class OtherMediatorSendShould
         _httpClient = fixture.Client;
     }
 
-    [Theory(DisplayName = "A request should be given when the command is found to have the correct handler and should return the expected response.")]
+    [Theory(DisplayName = "A request should be given when the command is found to have the correct handler, should return the expected response.")]
     [ClassData(typeof(TestRequestTheory))]
     public async Task GiveRequest_WhenSendCommandFoundHandler_ShouldReturnExpectedResponse(TestRequest request, HttpStatusCode httpStatusCodeExpected, string valueExpected)
     {
@@ -32,12 +32,20 @@ public class OtherMediatorSendShould
         Assert.True(result.Check);
     }
 
-    [Fact(DisplayName = "A request should be given when the command is found to have the correct handler and should return ok.")]
+    [Fact(DisplayName = "A request should be given when the command is found to have the correct handler, should return ok.")]
     public async Task GiveRequest_WhenSendCommandWithoutResponseFoundHandler_ShouldReturnOk()
     {
         var response = await _httpClient.PostAsJsonAsync("mediator-void", new TestRequestUnit());
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact(DisplayName = "A request should be given when the command is found to have the correct handler launch exception, should return internal server error.")]
+    public async Task GiveRequest_WhenSendCommandHandler_ShouldReturnInternalServerError()
+    {
+        var response = await _httpClient.PostAsJsonAsync("mediator-exception", new TestExceptionRequest());
+
+        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
 }
 

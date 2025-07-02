@@ -8,10 +8,8 @@ using OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 public static class OtherMediatorOpenTelemetryExtensions
 {
-    public static IServiceCollection AddMediatorOpenTelemetry(this IServiceCollection services, Dictionary<string, object>? attributes = null)
+    public static IServiceCollection AddMediatorOpenTelemetry(this IServiceCollection services)
     {
-        attributes ??= [];
-
         services.AddSingleton<MediatorInstrumentation>();
 
         var config = new MediatorConfiguration(services);

@@ -6,7 +6,7 @@ using OtherMediator.Integration.Tests.Fixtures;
 using OtherMediator.Integration.Tests.Handlers;
 using Xunit;
 
-[Trait("OtherMediator", "Integration")]
+[Trait("OtherMediator", "Publish")]
 [Collection(nameof(OtherMediatorFixtureCollection))]
 public class OtherMediatorPublishShould
 {

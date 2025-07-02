@@ -29,6 +29,16 @@ public class TestUnitSendHandler : IRequestHandler<TestRequestUnit, Unit>
     }
 }
 
+public class TestExceptionSendHandler : IRequestHandler<TestExceptionRequest, TestResponse>
+{
+    public async Task<TestResponse> Handle(TestExceptionRequest request, CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(1000); //simulating workload
+
+        throw new Exception("Force throw exception.");
+    }
+}
+
 public class TestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
@@ -44,6 +54,11 @@ public record TestRequestUnit : IRequest
 }
 
 public record TestRequest : IRequest<TestResponse>
+{
+    public string Value { get; set; }
+}
+
+public record TestExceptionRequest : IRequest<TestResponse>
 {
     public string Value { get; set; }
 }
