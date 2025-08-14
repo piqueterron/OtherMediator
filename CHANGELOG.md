@@ -2,7 +2,7 @@
 
 **Change Summary:**
 
-- 🚀 Features: 7
+- 🚀 Features: 8
 - 🐛 Bug Fixes: 
 - 📚 Documentation: 
 - 🛠️ Refactoring: 
@@ -15,6 +15,8 @@
 
 ### 🚀 Features
 
+- wip
+  [`163bba1edb53313d2e21985696c6a4dd5dd4f0b3`] by Erik Pique
 - wip ai
   [`c5cbd36187328836f3f37ee030c847c3fd1c4032`] by Erik Pique
 - wip

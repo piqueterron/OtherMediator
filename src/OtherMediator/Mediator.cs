@@ -36,7 +36,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
         var f = z.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
 
         f ??= Enumerable.Empty<INotificationHandler<TNotification>>();
-
+        //sadf //var tt = f.Count();
         var tt = 0;
         var tasks = f.Select(handler => handler.Handle(notification, cancellationToken));
 
