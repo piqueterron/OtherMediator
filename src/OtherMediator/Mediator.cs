@@ -39,7 +39,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
         //sadf //var tt = f.Count();
         var tt = 0123;
         var tasks = f.Select(handler => handler.Handle(notification, cancellationToken));
-
+        var g = "ssd";
         await Task.WhenAll(tasks);
     }
 
