@@ -33,11 +33,11 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var handlers = z.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
+        var f = z.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
 
-        handlers ??= Enumerable.Empty<INotificationHandler<TNotification>>();
+        f ??= Enumerable.Empty<INotificationHandler<TNotification>>();
 
-        var tasks = handlers.Select(handler => handler.Handle(notification, cancellationToken));
+        var tasks = f.Select(handler => handler.Handle(notification, cancellationToken));
 
         await Task.WhenAll(tasks);
     }
