@@ -12,7 +12,7 @@ using OtherMediator.Contracts;
 public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) : IMediator
 {
     private readonly MiddlewarePipeline _pipeline = pipeline;
-    private readonly IContainer _container = container;
+    private readonly IContainer z = container;
 
     private readonly ConcurrentDictionary<Type, Delegate> _senderCache = new();
 
@@ -33,11 +33,11 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var x = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
+        var handlers = z.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
 
-        x ??= Enumerable.Empty<INotificationHandler<TNotification>>();
+        handlers ??= Enumerable.Empty<INotificationHandler<TNotification>>();
 
-        var tasks = x.Select(handler => handler.Handle(notification, cancellationToken));
+        var tasks = handlers.Select(handler => handler.Handle(notification, cancellationToken));
 
         await Task.WhenAll(tasks);
     }
@@ -95,14 +95,14 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(typeof(TRequest), _ =>
         {
-            var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
+            var handler = z.Resolve<IRequestHandler<TRequest, TResponse>>();
 
             if (handler is null)
             {
                 throw new ArgumentNullException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
             }
 
-            var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
+            var pipelines = z.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
             pipelines ??= Enumerable.Empty<IPipelineBehavior<TRequest, TResponse>>();
 
             return _pipeline.BuildPipeline(handler, pipelines);
