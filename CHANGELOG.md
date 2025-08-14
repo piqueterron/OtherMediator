@@ -2,7 +2,7 @@
 
 **Change Summary:**
 
-- 🚀 Features: 11
+- 🚀 Features: 12
 - 🐛 Bug Fixes: 
 - 📚 Documentation: 
 - 🛠️ Refactoring: 
@@ -15,6 +15,8 @@
 
 ### 🚀 Features
 
+- asd
+  [`148f16cc108c95ad6e7b8639729e9103a6763aff`] by Erik Pique
 - otra
   [`8306805e278cacf9beb544e5492a7e46320bedca`] by Erik Pique
 - xx
