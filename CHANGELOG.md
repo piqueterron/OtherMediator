@@ -2,7 +2,7 @@
 
 **Change Summary:**
 
-- 🚀 Features: 10
+- 🚀 Features: 11
 - 🐛 Bug Fixes: 
 - 📚 Documentation: 
 - 🛠️ Refactoring: 
@@ -15,6 +15,8 @@
 
 ### 🚀 Features
 
+- otra
+  [`8306805e278cacf9beb544e5492a7e46320bedca`] by Erik Pique
 - xx
   [`2c7d244e47782068bd9c91d948ca391854776c49`] by Erik Pique
 - test wip ai
