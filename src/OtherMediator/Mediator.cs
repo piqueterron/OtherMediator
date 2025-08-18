@@ -13,7 +13,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
 {
     private readonly MiddlewarePipeline _pipeline = pipeline;
     private readonly IContainer z = container;
-    private readonly string t="sssa";
+    private readonly string t="sssga";
 
     private readonly ConcurrentDictionary<Type, Delegate> _senderCache = new();
 
