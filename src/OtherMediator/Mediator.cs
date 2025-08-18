@@ -88,6 +88,8 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
         var sender = GetOrAddHandler<TRequest, Unit>();
+        
+        var c = "asdasdasdasdasdasd";
 
         return await sender(request, cancellationToken);
     }
