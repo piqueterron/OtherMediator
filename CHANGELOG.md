@@ -8,7 +8,7 @@
 - 🛠️ Refactoring: 
 - 🧪 Tests: 
 - 🔧 Chores: 
-- 🎨 Code Style: 
+- 🎨 Code Style: 1
 - ⚡ Performance: 
 
 ---
@@ -22,8 +22,31 @@
 - add error handling pipeline
   [`e5709be`] by Erik Pique
 
+### 🎨 Code Style
+
+- fix indentation in comments for clarity in Unit struct
+  [`134460f`] by Erik Pique
+
 ### Other Changes
 
+- Merge pull request [#\1](https://github.com/piqueterron/OtherMediator/issues/\1) from piqueterron/feature/ai_format
+  [`9b4dc47`] by Erik Pique Terron
+- Merge pull request [#\1](https://github.com/piqueterron/OtherMediator/issues/\1) from piqueterron/coderabbitai/docstrings/134460f
+  [`37f6ee9`] by Erik Pique Terron
+- 📝 Add docstrings to `feature/ai_format`
+  [`d378313`] by coderabbitai[bot]
+- 
+  [``] by 
+- 
+  [`* https://github.com/piqueterron/OtherMediator/pull/11#issuecomment-3199403821`] by 
+- 
+  [``] by 
+- 
+  [`The following files were modified:`] by 
+- 
+  [``] by 
+- 
+  [`* `src/OtherMediator.Contracts/Unit.cs``] by 
 - Merge pull request [#\1](https://github.com/piqueterron/OtherMediator/issues/\1) from piqueterron/feature/coderabbit_test
   [`6a61e28`] by Erik Pique Terron
 - Merge pull request [#\1](https://github.com/piqueterron/OtherMediator/issues/\1) from piqueterron/coderabbitai/docstrings/248aeac

@@ -14,7 +14,7 @@ public class ErrorPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
         }
         catch (Exception ex)
         {
-            ExceptionDispatchInfo.Capture(ex).Throw();
+            //ExceptionDispatchInfo.Capture(ex).Throw();
 
             throw;
         }
