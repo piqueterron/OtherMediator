@@ -1,3 +1,31 @@
+## [v0.1.0-alpha-next] - 2025-08-19
+
+**Change Summary:**
+
+- 🚀 Features: 2
+- 🐛 Bug Fixes: 
+- 📚 Documentation: 
+- 🛠️ Refactoring: 
+- 🧪 Tests: 
+- 🔧 Chores: 
+- 🎨 Code Style: 
+- ⚡ Performance: 
+
+---
+
+### 🚀 Features
+
+- test ai workflow
+  [`d32f40b`] by Erik Pique
+- add error handling pipeline
+  [`e5709be`] by Erik Pique
+
+### Other Changes
+
+- Merge pull request [#\1](https://github.com/piqueterron/OtherMediator/issues/\1) from piqueterron/feature/error_handling
+  [`a539500`] by Erik Pique Terron
+
+
 ## [v0.1.0-alpha-next] - 2025-08-14
 
 **Change Summary:**
