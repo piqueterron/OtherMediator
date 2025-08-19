@@ -2,7 +2,7 @@
 
 public readonly struct Unit : IEquatable<Unit>, IComparable<Unit>, IComparable
 {
-    public static readonly Unit Value = new Unit();
+    public static readonly Unit Value = new();
 
     public override string ToString() => "()";
 
@@ -15,4 +15,34 @@ public readonly struct Unit : IEquatable<Unit>, IComparable<Unit>, IComparable
     public int CompareTo(Unit other) => 0;
 
     int IComparable.CompareTo(object? obj) => obj is Unit ? 0 : -1;
+
+    public static bool operator ==(Unit left, Unit right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Unit left, Unit right)
+    {
+        return !(left == right);
+    }
+
+    public static bool operator <(Unit left, Unit right)
+    {
+        return left.CompareTo(right) < 0;
+    }
+
+    public static bool operator <=(Unit left, Unit right)
+    {
+        return left.CompareTo(right) <= 0;
+    }
+
+    public static bool operator >(Unit left, Unit right)
+    {
+        return left.CompareTo(right) > 0;
+    }
+
+    public static bool operator >=(Unit left, Unit right)
+    {
+        return left.CompareTo(right) >= 0;
+    }
 }
