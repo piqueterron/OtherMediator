@@ -1,4 +1,4 @@
-﻿namespace OtherMediator;
+namespace OtherMediator;
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
@@ -28,7 +28,14 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     /// <param name="notification">The notification instance to be published.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the tasks to complete.</param>
     /// <returns>A task that represents the asynchronous publish operation.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if the notification is null.</exception>
+    /// <summary>
+    /// Publishes a <typeparamref name="TNotification"/> to all resolved <see cref="INotificationHandler{TNotification}"/> instances and waits for all handlers to complete.
+    /// </summary>
+    /// <typeparam name="TNotification">The notification type.</typeparam>
+    /// <param name="notification">The notification to publish. Must not be null.</param>
+    /// <param name="cancellationToken">A token to observe while awaiting handler completion.</param>
+    /// <returns>A task that completes once every resolved handler has finished processing the notification.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="notification"/> is null.</exception>
     public async Task Publish<TNotification>([NotNull] TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
@@ -83,7 +90,15 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     /// <returns>
     /// A task that represents the asynchronous send operation, containing the response from the handler.
     /// </returns>
-    /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
+    /// <summary>
+    /// Sends a request expecting a Unit response through the mediator pipeline.
+    /// </summary>
+    /// <param name="request">The request to send. Must not be null and must have a registered handler.</param>
+    /// <param name="cancellationToken">Token to cancel the request processing.</param>
+    /// <returns>A task that completes with a Unit result when the request has been handled.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if <paramref name="request"/> is null or if no handler is registered for the request type.
+    /// </exception>
     public async Task<Unit> Send<TRequest>([NotNull] TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest<Unit>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -95,6 +110,20 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
         return await sender(request, cancellationToken);
     }
 
+    /// <summary>
+    /// Retrieves or creates a cached request handler delegate for the given request/response types.
+    /// </summary>
+    /// <remarks>
+    /// Resolves an IRequestHandler<TRequest, TResponse> and any IPipelineBehavior<TRequest, TResponse> instances
+    /// from the container, builds the pipeline delegate via the MiddlewarePipeline, and caches it for reuse.
+    /// </remarks>
+    /// <returns>
+    /// A delegate of signature Func&lt;TRequest, CancellationToken, Task&lt;TResponse&gt;&gt; that executes
+    /// the resolved handler through the configured pipeline.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when no IRequestHandler&lt;TRequest, TResponse&gt; is registered in the container.
+    /// </exception>
     private Func<TRequest, CancellationToken, Task<TResponse>> GetOrAddHandler<TRequest, TResponse>() where TRequest : IRequest<TResponse>
     {
         return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(typeof(TRequest), _ =>
