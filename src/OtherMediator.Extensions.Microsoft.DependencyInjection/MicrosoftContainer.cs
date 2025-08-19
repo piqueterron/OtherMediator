@@ -30,10 +30,10 @@ public class MicrosoftContainer(IServiceCollection? services) : IContainer
 
     public void Register<TService, TImplementation>(Lifetime lifetime) where TImplementation : TService
     {
-        if (_provider is not null)
-        {
-            throw new InvalidOperationException("The container has already been initialised. No more services can be registered.");
-        }
+        //if (_provider is not null)
+        //{
+        //    throw new InvalidOperationException("The container has already been initialised. No more services can be registered.");
+        //}
 
         _services.Add(new ServiceDescriptor(typeof(TService), typeof(TImplementation), lifetime));
     }
