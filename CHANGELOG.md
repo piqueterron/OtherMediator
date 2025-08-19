@@ -2,7 +2,7 @@
 
 **Change Summary:**
 
-- 🚀 Features: 16
+- 🚀 Features: 17
 - 🐛 Bug Fixes: 
 - 📚 Documentation: 
 - 🛠️ Refactoring: 
@@ -15,6 +15,8 @@
 
 ### 🚀 Features
 
+- add
+  [`5ae534843d034e12b90978cf3a854a1f9266ff53`] by Erik Pique
 - tests
   [`663eb53d2199022541696ca0acc7b38168d47cfd`] by Erik Pique
 - t ai
@@ -50,6 +52,38 @@
 
 ### Other Changes
 
+- Update Mediator.cs
+  [`373194dc263655c64227178f43ef871a1f7c7a55`] by Erik Pique Terron
+- Update Mediator.cs
+  [`38fa77d772a97fbc197e153198e9a5ad82a0128c`] by Erik Pique Terron
+- Update Mediator.cs
+  [`396a3811c348b00a9ac4e008113d9964b42394c0`] by Erik Pique Terron
+- Update Mediator.cs
+  [`2231a1a340aec9224fe9a4cc38cb5bcd19e2b6f2`] by Erik Pique Terron
+- Update Mediator.cs
+  [`7bec6ad0e9b9cc6cf698f88988625b7fadc0acdd`] by Erik Pique Terron
+- Update Mediator.cs
+  [`a0c03920c859f1e0e918edeaf6c4d7dab0c83639`] by Erik Pique Terron
+- Update Mediator.cs
+  [`6d4351cc643e9a3678df32009c46ccce18b5a263`] by Erik Pique Terron
+- Update Mediator.cs
+  [`9c9f0083705527de977a098c40a036ded164c07b`] by Erik Pique Terron
+- Update Mediator.cs
+  [`a0fcb0556fe827c21c59cdd52724603c7393fdec`] by Erik Pique Terron
+- Update Mediator.cs
+  [`e48a1f26dff2ec1901fcfa5c84cd68e25233524f`] by Erik Pique Terron
+- Update Mediator.cs
+  [`96dbd9d1a7e38512a87c60c9ef2fd5564bb4fc82`] by Erik Pique Terron
+- Update Mediator.cs
+  [`ee0a070018c0ff9c0222134f7d4e5dbd4dd7cdbe`] by Erik Pique Terron
+- Update Mediator.cs
+  [`6988e81dce93f1b2acf95ec8981424ad081e0147`] by Erik Pique Terron
+- Update Mediator.cs
+  [`e9eee8705a443ad73382eb13a13eaa53ac7def8b`] by Erik Pique Terron
+- Update Mediator.cs
+  [`0ed5602394a0be964e2f5a4747db57b0ed6d5156`] by Erik Pique Terron
+- Update Mediator.cs
+  [`2c41be774e1981631da72ca19ffc1abcbe7efecc`] by Erik Pique Terron
 - Merge pull request [#\1](https://github.com/piqueterron/OtherMediator/issues/\1) from piqueterron/feature/error_handling
   [`a5395006e0f3112c1d4478c591089b81eb1eabf4`] by Erik Pique Terron
 
