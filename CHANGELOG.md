@@ -2,7 +2,7 @@
 
 **Change Summary:**
 
-- 🚀 Features: 6
+- 🚀 Features: 7
 - 🐛 Bug Fixes: 
 - 📚 Documentation: 
 - 🛠️ Refactoring: 
@@ -15,6 +15,8 @@
 
 ### 🚀 Features
 
+- Merge branch 'feature/sourcery' of https://github.com/piqueterron/OtherMediator into feature/sourcery
+  [`95750f1`] by Erik Pique
 - test pr ai
   [`6c2b4c2`] by Erik Pique
 - merge
@@ -35,6 +37,8 @@
 
 ### Other Changes
 
+- Update Mediator.cs
+  [`948a13e`] by Erik Pique Terron
 - Merge pull request [#\1](https://github.com/piqueterron/OtherMediator/issues/\1) from piqueterron/feature/ai_format
   [`9b4dc47`] by Erik Pique Terron
 - Merge pull request [#\1](https://github.com/piqueterron/OtherMediator/issues/\1) from piqueterron/coderabbitai/docstrings/134460f
