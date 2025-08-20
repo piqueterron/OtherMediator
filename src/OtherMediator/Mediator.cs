@@ -97,13 +97,13 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
         {
             var handler = _c.Resolve<IRequestHandler<TRequest, TResponse>>();
 
-            if (handler is null)
-            {
-                throw new ArgumentNullException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
-            }
+            //if (handler is null)
+            //{
+            //    throw new ArgumentNullException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
+            //}
 
             var pipelines = _c.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
-            pipelines ??= Enumerable.Empty<IPipelineBehavior<TRequest, TResponse>>();
+            pipelines ??= [];
 
             return _pipeline.BuildPipeline(handler, pipelines);
         });
