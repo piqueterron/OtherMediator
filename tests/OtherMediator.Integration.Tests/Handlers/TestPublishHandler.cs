@@ -16,6 +16,7 @@ public class TestNotificationOneHandler : INotificationHandler<TestNotification>
         await Task.Delay(2000, cancellationToken); //simulating workload
 
         var t = 0;
+        var h = 00;
 
         await MonitorManager.SignalAsync();
     }
