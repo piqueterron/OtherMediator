@@ -28,4 +28,5 @@ public static class JaegerPort
     public const int OTL_GRPC = 4317;
     public const int OTL_HTTP = 4318;
     public const int GRPC = 14250;
+    public const int GRPC2 = 14250;
 }
