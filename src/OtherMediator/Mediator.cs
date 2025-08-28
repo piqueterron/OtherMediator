@@ -11,8 +11,8 @@ using OtherMediator.Contracts;
 /// </summary>
 public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) : IMediator
 {
-    private readonly MiddlewarePipeline _pipeline = pipeline;
-    private readonly IContainer _container = container;
+    private readonly MiddlewarePipeline _p = pipeline;
+    private readonly IContainer _c = container;
 
     private readonly ConcurrentDictionary<Type, Delegate> _senderCache = new();
 
@@ -33,7 +33,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var x = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
+        var x = _c.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
 
         x ??= Enumerable.Empty<INotificationHandler<TNotification>>();
 
@@ -95,17 +95,17 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(typeof(TRequest), _ =>
         {
-            var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
+            var handler = _c.Resolve<IRequestHandler<TRequest, TResponse>>();
 
             if (handler is null)
             {
                 throw new ArgumentNullException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
             }
 
-            var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
+            var pipelines = _c.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
             pipelines ??= Enumerable.Empty<IPipelineBehavior<TRequest, TResponse>>();
 
-            return _pipeline.BuildPipeline(handler, pipelines);
+            return _p.BuildPipeline(handler, pipelines);
         });
     }
 }
