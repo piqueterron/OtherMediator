@@ -13,7 +13,7 @@ public class TestNotificationOneHandler : INotificationHandler<TestNotification>
 {
     public async Task Handle(TestNotification notification, CancellationToken cancellationToken = default)
     {
-        await Task.Delay(2000, cancellationToken); //simulating workload
+        await Task.Delay(2000); //simulating workload
 
         await MonitorManager.SignalAsync();
     }
