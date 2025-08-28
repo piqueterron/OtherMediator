@@ -9,8 +9,6 @@ public sealed class MiddlewarePipeline
         IEnumerable<IPipelineBehavior<TRequest, TResponse>> pipelines)
         where TRequest : IRequest<TResponse>
     {
-        ArgumentNullException.ThrowIfNull(handler, nameof(handler));
-
         Func<TRequest, CancellationToken, Task<TResponse>> pipeline = handler.Handle;
 
         foreach (var behavior in pipelines.Reverse())

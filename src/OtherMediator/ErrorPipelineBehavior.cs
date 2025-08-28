@@ -8,15 +8,6 @@ public class ErrorPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TReq
 {
     public async Task<TResponse> Handle(TRequest request, Func<TRequest, CancellationToken, Task<TResponse>> next, CancellationToken cancellationToken)
     {
-        try
-        {
-            return await next(request, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            ExceptionDispatchInfo.Capture(ex).Throw();
-
-            throw;
-        }
+        return await next(request, cancellationToken);
     }
 }
