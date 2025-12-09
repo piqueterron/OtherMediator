@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Extensions.OpenTelemetry;
+namespace OtherMediator.Extensions.OpenTelemetry;
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -6,7 +6,7 @@ using System.Diagnostics.Metrics;
 public class MediatorInstrumentation
 {
     public const string SERVICE_NAME = "Mediator";
-    public const string SERVICE_VERSION = "0.1.0";
+    public const string SERVICE_VERSION = "0.2.0";
 
     private static IEnumerable<KeyValuePair<string, object?>> _tags =
         [
@@ -15,7 +15,7 @@ public class MediatorInstrumentation
             new("library.language", "dotnet"),
             new("telemetry.sdk.name", "opentelemetry"),
             new("telemetry.sdk.language", "dotnet"),
-            new("telemetry.sdk.version", "1.12.0"),
+            new("telemetry.sdk.version", "1.14.0"),
         ];
 
     private readonly Counter<long> _counter;

@@ -1,4 +1,4 @@
-﻿namespace OtherMediator;
+namespace OtherMediator;
 
 using OtherMediator.Contracts;
 

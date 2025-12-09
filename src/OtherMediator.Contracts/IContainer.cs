@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Contracts;
+namespace OtherMediator.Contracts;
 
 public interface IContainer
 {

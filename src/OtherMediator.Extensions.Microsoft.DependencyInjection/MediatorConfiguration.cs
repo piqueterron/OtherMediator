@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Extensions.Microsoft.DependencyInjection;
+namespace OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 using System.Reflection;
 using global::Microsoft.Extensions.DependencyInjection;

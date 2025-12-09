@@ -1,4 +1,4 @@
-﻿namespace OtherMediator;
+namespace OtherMediator;
 
 using System.Runtime.ExceptionServices;
 using OtherMediator.Contracts;

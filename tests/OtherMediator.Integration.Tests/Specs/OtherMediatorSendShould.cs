@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Integration.Tests.Specs;
+namespace OtherMediator.Integration.Tests.Specs;
 
 using System.Net;
 using System.Net.Http.Json;

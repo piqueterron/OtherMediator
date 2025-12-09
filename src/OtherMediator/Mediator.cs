@@ -1,4 +1,4 @@
-﻿namespace OtherMediator;
+namespace OtherMediator;
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
@@ -14,7 +14,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     private readonly MiddlewarePipeline _pipeline = pipeline;
     private readonly IContainer _container = container;
 
-    private readonly ConcurrentDictionary<Type, Delegate> _senderCache = new();
+    private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
 
     /// <summary>
     /// Publishes a notification to all registered notification handlers asynchronously.
@@ -33,11 +33,11 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var x = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
+        var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
 
-        x ??= Enumerable.Empty<INotificationHandler<TNotification>>();
+        handlers ??= Enumerable.Empty<INotificationHandler<TNotification>>();
 
-        var tasks = x.Select(handler => handler.Handle(notification, cancellationToken));
+        var tasks = handlers.Select(handler => handler.Handle(notification, cancellationToken)).ToArray();
 
         await Task.WhenAll(tasks);
     }
@@ -93,13 +93,15 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
 
     private Func<TRequest, CancellationToken, Task<TResponse>> GetOrAddHandler<TRequest, TResponse>() where TRequest : IRequest<TResponse>
     {
-        return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(typeof(TRequest), _ =>
+        var key = (typeof(TRequest), typeof(TResponse));
+
+        return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(key, _ =>
         {
             var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
 
             if (handler is null)
             {
-                throw new ArgumentNullException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
+                throw new InvalidOperationException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
             }
 
             var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();

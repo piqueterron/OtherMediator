@@ -7,12 +7,14 @@ root = true
 # All files
 [*]
 indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
 
 # Code files
 [*.{cs,csx}]
 indent_size = 4
-insert_final_newline = false
-charset = utf-8-bom
+insert_final_newline = true
+charset = utf-8
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]

@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Extensions.OpenTelemetry;
+namespace OtherMediator.Extensions.OpenTelemetry;
 
 using System;
 using System.Diagnostics;

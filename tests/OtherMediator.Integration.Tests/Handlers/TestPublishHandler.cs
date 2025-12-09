@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Integration.Tests.Handlers;
+namespace OtherMediator.Integration.Tests.Handlers;
 
 using System.Threading.Tasks;
 using OtherMediator.Contracts;

@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OtherMediator.Contracts/OtherMediator.Contracts.csproj" />
+    <Project Path="src/OtherMediator.Extensions.Microsoft.DependencyInjection/OtherMediator.Extensions.Microsoft.DependencyInjection.csproj" />
+    <Project Path="src/OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection/OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection.csproj" />
+    <Project Path="src/OtherMediator.Extensions.OpenTelemetry/OtherMediator.Extensions.OpenTelemetry.csproj" />
+    <Project Path="src/OtherMediator/OtherMediator.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OtherMediator.Integration.Tests/OtherMediator.Integration.Tests.csproj" />
+    <Project Path="tests/OtherMediator.Integration/OtherMediator.Integration.csproj" />
+  </Folder>
+</Solution>

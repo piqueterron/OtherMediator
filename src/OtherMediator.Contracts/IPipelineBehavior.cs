@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Contracts;
+namespace OtherMediator.Contracts;
 
 public interface IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>

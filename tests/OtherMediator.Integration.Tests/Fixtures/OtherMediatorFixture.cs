@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Integration.Tests.Fixtures;
+namespace OtherMediator.Integration.Tests.Fixtures;
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;

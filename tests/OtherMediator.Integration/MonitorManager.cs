@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Integration;
+namespace OtherMediator.Integration;
 
 using System.Threading.Tasks;
 

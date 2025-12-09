@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection;
+namespace OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection;
 
 using global::Microsoft.Extensions.DependencyInjection;
 using global::OpenTelemetry.Metrics;

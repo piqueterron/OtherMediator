@@ -1,4 +1,4 @@
-﻿namespace OtherMediator.Integration;
+namespace OtherMediator.Integration;
 
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
@@ -16,8 +16,8 @@ public class JaegerContainer
             .WithPortBinding(JaegerPort.GRPC, true)
             .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true")
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilPortIsAvailable(JaegerPort.UI)
-                .UntilPortIsAvailable(JaegerPort.OTL_GRPC))
+                .UntilExternalTcpPortIsAvailable(JaegerPort.UI)
+                .UntilExternalTcpPortIsAvailable(JaegerPort.OTL_GRPC))
             .Build();
     }
 }
