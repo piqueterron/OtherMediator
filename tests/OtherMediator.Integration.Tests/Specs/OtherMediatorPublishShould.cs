@@ -8,14 +8,9 @@ using Xunit;
 
 [Trait("OtherMediator", "Publish")]
 [Collection(nameof(OtherMediatorFixtureCollection))]
-public class OtherMediatorPublishShould
+public class OtherMediatorPublishShould(OtherMediatorFixture fixture)
 {
-    private readonly HttpClient _httpClient;
-
-    public OtherMediatorPublishShould(OtherMediatorFixture fixture)
-    {
-        _httpClient = fixture.Client;
-    }
+    private readonly HttpClient _httpClient = fixture.Client;
 
     [Fact(DisplayName = "When publishing a message to all subscribers, a request should be given that invokes all listeners and provides them with a copy of the message.")]
     public async Task GiveRequest_WhenPublishMessageWithManySubscribers_ShouldExecuteAllHandlersListenin()

@@ -8,14 +8,9 @@ using Xunit;
 
 [Trait("OtherMediator", "Send")]
 [Collection(nameof(OtherMediatorFixtureCollection))]
-public class OtherMediatorSendShould
+public class OtherMediatorSendShould(OtherMediatorFixture fixture)
 {
-    private readonly HttpClient _httpClient;
-
-    public OtherMediatorSendShould(OtherMediatorFixture fixture)
-    {
-        _httpClient = fixture.Client;
-    }
+    private readonly HttpClient _httpClient = fixture.Client;
 
     [Theory(DisplayName = "A request should be given when the command is found to have the correct handler, should return the expected response.")]
     [ClassData(typeof(TestRequestTheory))]
