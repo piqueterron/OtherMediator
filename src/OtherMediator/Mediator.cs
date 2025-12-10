@@ -15,6 +15,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     private readonly IContainer _container = container;
 
     private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
+    private readonly ConcurrentDictionary<INotification, IEnumerable<Task>> _publishCache = new();
 
     /// <summary>
     /// Publishes a notification to all registered notification handlers asynchronously.
@@ -33,11 +34,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
-
-        handlers ??= Enumerable.Empty<INotificationHandler<TNotification>>();
-
-        var tasks = handlers.Select(handler => handler.Handle(notification, cancellationToken)).ToArray();
+        var tasks = GetOrAddPublishers(notification);
 
         await Task.WhenAll(tasks);
     }
@@ -105,9 +102,20 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
             }
 
             var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
-            pipelines ??= Enumerable.Empty<IPipelineBehavior<TRequest, TResponse>>();
+            pipelines ??= [];
 
             return _pipeline.BuildPipeline(handler, pipelines);
+        });
+    }
+
+    private IEnumerable<Task> GetOrAddPublishers<TNotification>(TNotification notification) where TNotification : INotification
+    {
+        return _publishCache.GetOrAdd(notification, _ =>
+        {
+            var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
+            handlers ??= [];
+
+            return handlers.Select(handler => handler.Handle(notification, CancellationToken.None)).ToArray();
         });
     }
 }
