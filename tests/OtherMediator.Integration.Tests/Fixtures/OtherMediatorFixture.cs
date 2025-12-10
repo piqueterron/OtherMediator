@@ -74,7 +74,7 @@ public class OtherMediatorFixture : IAsyncLifetime
         builder.Services
             .AddMediator(config =>
             {
-                config.Lifetime = ServiceLifetime.Scoped;
+                config.Lifetime = Lifetime.Scoped;
 
                 config.RegisterServicesFromAssembly<OtherMediatorFixture>();
                 config.AddOpenPipelineBehavior(typeof(TestPipeline<,>));

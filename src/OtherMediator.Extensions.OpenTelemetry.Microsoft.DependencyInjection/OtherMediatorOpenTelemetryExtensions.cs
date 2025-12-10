@@ -29,7 +29,7 @@ public static class OtherMediatorOpenTelemetryExtensions
 
         if (!services.Any((ServiceDescriptor d) => d.ServiceType == typeof(IPipelineBehavior<,>) && d.ImplementationType == typeof(OpenTelemetryPipelineBehavior<,>)))
         {
-            services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(OpenTelemetryPipelineBehavior<,>), config.Lifetime));
+            services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(OpenTelemetryPipelineBehavior<,>), (ServiceLifetime)config.Lifetime));
         }
 
         return services;

@@ -15,3 +15,9 @@ public enum Lifetime
     Scoped,
     Transient
 }
+
+public enum DispatchStrategy
+{
+    Parallel,
+    Sequential
+}

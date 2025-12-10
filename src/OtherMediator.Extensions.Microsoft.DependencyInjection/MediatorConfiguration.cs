@@ -7,9 +7,9 @@ using OtherMediator.Contracts;
 /// <summary>
 /// Configures the mediator and registers handlers and pipeline behaviors.
 /// </summary>
-public class MediatorConfiguration
+public class MediatorConfiguration : IMediatorConfiguration
 {
-    private ServiceLifetime _lifetime = ServiceLifetime.Transient;
+    private Lifetime _lifetime = Lifetime.Transient;
     private readonly IServiceCollection _services;
 
     /// <summary>
@@ -24,7 +24,7 @@ public class MediatorConfiguration
     /// <summary>
     /// Gets or sets the default service lifetime for handler registrations, by default Transient.
     /// </summary>
-    public ServiceLifetime Lifetime
+    public Lifetime Lifetime
     {
         get => _lifetime;
         set => _lifetime = value;
@@ -34,6 +34,13 @@ public class MediatorConfiguration
     /// Adds a middleware to the pipeline that will catch exceptions, by default true.
     /// </summary>
     public bool UseExceptionHandler { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the strategy used to dispatch tasks or operations.
+    /// </summary>
+    /// <remarks>The dispatch strategy determines how tasks are scheduled and executed, such as sequentially
+    /// or in parallel. Changing this property affects the concurrency and ordering of dispatched operations.</remarks>
+    public DispatchStrategy DispatchStrategy { get; set; } = DispatchStrategy.Parallel;
 
     /// <summary>
     /// Registers all handler services from the assembly containing <typeparamref name="TAssembly"/>.
@@ -95,7 +102,7 @@ public class MediatorConfiguration
                             continue;
                         }
 
-                        _services.Add(new ServiceDescriptor(serviceType, implementationType, _lifetime));
+                        _services.Add(new ServiceDescriptor(serviceType, implementationType, (ServiceLifetime)_lifetime));
                         alreadyRegistered.Add(key);
                     }
                 }
@@ -109,10 +116,7 @@ public class MediatorConfiguration
     /// <param name="type">The behavior type implementing <see cref="IPipelineBehavior{,}"/>.</param>
     public void AddOpenPipelineBehavior(Type type)
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         var behaviorInterface = type.GetInterfaces()
             .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IPipelineBehavior<,>));
@@ -124,7 +128,7 @@ public class MediatorConfiguration
 
         if (!_services.Any(s => s.ServiceType == typeof(IPipelineBehavior<,>) && s.ImplementationType == type))
         {
-            _services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), type, _lifetime));
+            _services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), type, (ServiceLifetime)_lifetime));
         }
     }
 
@@ -137,16 +141,13 @@ public class MediatorConfiguration
     public void AddPipelineBehavior<TRequest, TResponse>(Type type)
         where TRequest : IRequest<TResponse>
     {
-        if (type is null)
-        {
-            throw new ArgumentNullException(nameof(type));
-        }
+        ArgumentNullException.ThrowIfNull(type);
 
         var serviceType = typeof(IPipelineBehavior<TRequest, TResponse>);
 
         if (!_services.Any(s => s.ServiceType == serviceType && s.ImplementationType == type))
         {
-            _services.Add(new ServiceDescriptor(serviceType, type, _lifetime));
+            _services.Add(new ServiceDescriptor(serviceType, type, (ServiceLifetime)_lifetime));
         }
     }
 }

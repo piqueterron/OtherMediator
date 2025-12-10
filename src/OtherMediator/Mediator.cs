@@ -9,10 +9,11 @@ using OtherMediator.Contracts;
 /// and sending of requests within the application. This class coordinates the resolution of handlers
 /// and the execution of middleware pipelines, enabling decoupled communication between components.
 /// </summary>
-public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) : IMediator
+public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, IMediatorConfiguration configuration) : IMediator
 {
     private readonly MiddlewarePipeline _pipeline = pipeline;
     private readonly IContainer _container = container;
+    private readonly IMediatorConfiguration _configuration = configuration;
 
     private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
     private readonly ConcurrentDictionary<INotification, IEnumerable<Task>> _publishCache = new();
@@ -34,9 +35,21 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var tasks = GetOrAddPublishers(notification);
+        var tasks = GetOrAddPublishers(notification, cancellationToken);
 
-        await Task.WhenAll(tasks);
+        if(_configuration.DispatchStrategy == DispatchStrategy.Parallel)
+        {
+            await Task.WhenAll(tasks);
+        }
+
+        if(_configuration.DispatchStrategy == DispatchStrategy.Sequential)
+        {
+            foreach (var task in tasks)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await task;
+            }
+        }
     }
 
     /// <summary>
@@ -108,14 +121,14 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline) 
         });
     }
 
-    private IEnumerable<Task> GetOrAddPublishers<TNotification>(TNotification notification) where TNotification : INotification
+    private IEnumerable<Task> GetOrAddPublishers<TNotification>(TNotification notification, CancellationToken cancellationToken) where TNotification : INotification
     {
         return _publishCache.GetOrAdd(notification, _ =>
         {
             var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
             handlers ??= [];
 
-            return handlers.Select(handler => handler.Handle(notification, CancellationToken.None)).ToArray();
+            return handlers.Select(handler => handler.Handle(notification, cancellationToken)).ToArray();
         });
     }
 }

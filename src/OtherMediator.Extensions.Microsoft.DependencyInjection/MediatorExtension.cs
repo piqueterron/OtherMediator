@@ -38,11 +38,11 @@ public static class MediatorExtension
         {
             if (!services.Any((ServiceDescriptor d) => d.ServiceType == typeof(IPipelineBehavior<,>) && d.ImplementationType == typeof(ErrorPipelineBehavior<,>)))
             {
-                services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(ErrorPipelineBehavior<,>), mediatorConfig.Lifetime));
+                services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(ErrorPipelineBehavior<,>), (ServiceLifetime)mediatorConfig.Lifetime));
             }
         }
 
-        services.AddCoreMediator();
+        services.AddCoreMediator(mediatorConfig);
 
         return services;
     }
@@ -58,7 +58,9 @@ public static class MediatorExtension
     {
         config?.Invoke(services);
 
-        services.AddCoreMediator();
+        var mediatorConfig = new MediatorConfiguration(services);
+
+        services.AddCoreMediator(mediatorConfig);
 
         return services;
     }
@@ -68,9 +70,10 @@ public static class MediatorExtension
     /// </summary>
     /// <param name="services">The service collection to register the mediator into.</param>
     /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
-    private static IServiceCollection AddCoreMediator(this IServiceCollection services)
+    private static IServiceCollection AddCoreMediator(this IServiceCollection services, IMediatorConfiguration mediatorConfiguration)
     {
-        services.AddSingleton<IMediator>(sp => new Mediator(new MicrosoftContainer(services), new MiddlewarePipeline()));
+        services.AddSingleton<IMediator>(sp =>
+            new Mediator(new MicrosoftContainer(services), new MiddlewarePipeline(), mediatorConfiguration));
 
         return services;
     }
