@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -16,28 +15,24 @@ using Xunit;
 
 public class OtherMediatorFixture : IAsyncLifetime
 {
-    private static readonly SemaphoreSlim _semaphore = new(1, 1);
-
-    private DotNet.Testcontainers.Containers.IContainer _jaeger;
+    private DotNet.Testcontainers.Containers.IContainer? _jaeger;
     private TestServer _testServer;
+    private HttpClient? _client;
 
-    public HttpClient Client => _testServer.CreateClient();
+    public HttpClient Client => _client ??= _testServer.CreateClient();
 
     private async Task<TestServer> CreateApiServerAsync()
     {
+        var integrationTestInfo = AssemblyExtension.GetIntegrationTestInfo<OtherMediatorFixture>();
+
         var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
         {
-            ApplicationName = "OtherMediator.Test",
-            EnvironmentName = Environments.Development
+            ApplicationName = integrationTestInfo.ServiceName,
+            EnvironmentName = integrationTestInfo.EnvironmentName
         });
 
-        if (_jaeger is null)
-        {
-            throw new InvalidOperationException("Jaeger container not initialized.");
-        }
-
         var otlpEndpoint = new Uri($"http://localhost:{_jaeger.GetMappedPublicPort(JaegerPort.OTL_GRPC)}");
-        var version = typeof(OtherMediatorFixture).Assembly.GetName()?.Version!.ToString();
+        var version = integrationTestInfo.ServiceVersion;
 
         builder.Services
             .AddRouting()
@@ -46,7 +41,7 @@ public class OtherMediatorFixture : IAsyncLifetime
                 .AddService(builder.Environment.ApplicationName, serviceVersion: version)
                 .AddAttributes(new Dictionary<string, object>
                 {
-                    ["service.instance.id"] = Guid.NewGuid().ToString(),
+                    ["service.instance.id"] = Guid.CreateVersion7().ToString(),
                     ["deployment.environment.name"] = builder.Environment.EnvironmentName,
                     ["host.name"] = Environment.MachineName
                 }))
@@ -100,28 +95,22 @@ public class OtherMediatorFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _jaeger.StopAsync();
-        await _jaeger.DisposeAsync();
+        _client?.Dispose();
+        _testServer?.Dispose();
+
+        if (_jaeger is not null)
+        {
+            await _jaeger.StopAsync();
+            await _jaeger.DisposeAsync();
+        }
     }
 
     public async Task InitializeAsync()
     {
-        await _semaphore.WaitAsync();
+        _jaeger = JaegerContainer.JaegerInitialize();
 
-        try
-        {
-            if (_testServer is not null)
-            {
-                return;
-            }
+        await _jaeger.StartAsync();
 
-            _jaeger = JaegerContainer.JaegerInitialize();
-            await _jaeger.StartAsync();
-            _testServer = await CreateApiServerAsync();
-        }
-        finally
-        {
-            _semaphore.Release();
-        }
+        _testServer = await CreateApiServerAsync();
     }
 }
