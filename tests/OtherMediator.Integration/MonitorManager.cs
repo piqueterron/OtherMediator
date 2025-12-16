@@ -11,10 +11,7 @@ public class MonitorManager
 
     public static async Task InitializeAsync(int expectedCount)
     {
-        if (expectedCount <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(expectedCount));
-        }
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expectedCount);
 
         await _semaphore.WaitAsync();
 
