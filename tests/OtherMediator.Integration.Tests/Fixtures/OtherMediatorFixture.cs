@@ -31,11 +31,12 @@ public class OtherMediatorFixture : IAsyncLifetime
             EnvironmentName = integrationTestInfo.EnvironmentName
         });
 
-        var otlpEndpoint = new Uri($"http://localhost:{_jaeger.GetMappedPublicPort(JaegerPort.OTL_GRPC)}");
+        var otlpEndpoint = new Uri($"http://localhost:{_jaeger.GetMappedPublicPort(JaegerContainer.Ports.OTL_GRPC)}");
         var version = integrationTestInfo.ServiceVersion;
 
         builder.Services
             .AddRouting()
+            .AddProblemDetails()
             .AddOpenTelemetry()
             .ConfigureResource(resource => resource
                 .AddService(builder.Environment.ApplicationName, serviceVersion: version)
@@ -68,13 +69,15 @@ public class OtherMediatorFixture : IAsyncLifetime
 
         builder.Services
             .AddMediator()
-            .AddMediatorOpenTelemetry();
+            .AddMediatorOpenTelemetry()
+            .AddExceptionHandler<GlobalExceptionHandler>();
 
         builder.WebHost.UseTestServer();
 
         var app = builder.Build();
 
         app.UseRouting();
+        app.UseExceptionHandler();
 
         app.MapPost("/mediator", async (IMediator mediator, TestRequest request) =>
             await mediator.Send<TestRequest, TestResponse>(request));

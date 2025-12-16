@@ -11,7 +11,9 @@ public static class MonitorManager
     public static async Task<bool> WaitAsync(int counter, int timeoutSeconds = 10)
     {
         if (counter <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(counter), "The counter must be greater than zero");
+        }
 
         await _semaphore.WaitAsync();
 
@@ -27,7 +29,9 @@ public static class MonitorManager
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
         using (cts.Token.Register(() => _tcs.TrySetResult()))
+        {
             await _tcs.Task;
+        }
 
         return _count == 0;
     }
@@ -39,12 +43,16 @@ public static class MonitorManager
         try
         {
             if (_count <= 0)
+            {
                 return;
+            }
 
             _count--;
 
             if (_count == 0)
+            {
                 _tcs?.TrySetResult();
+            }
         }
         finally
         {
