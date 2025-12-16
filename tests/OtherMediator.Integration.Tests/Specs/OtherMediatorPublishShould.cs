@@ -15,9 +15,11 @@ public class OtherMediatorPublishShould(OtherMediatorFixture fixture)
     [Fact(DisplayName = "When publishing a message to all subscribers, a request should be given that invokes all listeners and provides them with a copy of the message.")]
     public async Task GiveRequest_WhenPublishMessageWithManySubscribers_ShouldExecuteAllHandlersListenin()
     {
-        _httpClient.PostAsJsonAsync("notification", new TestNotification { Message = "Test Notification" });
+        await MonitorManager.InitializeAsync(2);
 
-        var result = await MonitorManager.WaitAsync(2);
+        await _httpClient.PostAsJsonAsync("notification", new TestNotification { Message = "Test Notification" });
+
+        var result = await MonitorManager.WaitForCompletionAsync(timeoutSeconds: 5);
 
         Assert.True(result);
     }

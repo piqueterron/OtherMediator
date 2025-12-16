@@ -3,7 +3,7 @@ namespace OtherMediator.Integration;
 public static class AssemblyExtension
 {
     private const string NAME_DEFAULT = "UnknownService";
-    private const string VERSION_DEFAULT = "1.0.0";
+    private const string VERSION_DEFAULT = "0.0.0";
     private const string ENVIRONMENT_DEFAULT = "test";
 
     public static IntegrationTestInfo GetIntegrationTestInfo<T>()

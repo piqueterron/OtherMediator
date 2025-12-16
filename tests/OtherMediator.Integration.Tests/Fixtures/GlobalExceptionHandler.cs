@@ -4,14 +4,9 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-public sealed class GlobalExceptionHandler : IExceptionHandler
+public sealed class GlobalExceptionHandler(IProblemDetailsService problemDetails) : IExceptionHandler
 {
-    private readonly IProblemDetailsService _problemDetails;
-
-    public GlobalExceptionHandler(IProblemDetailsService problemDetails)
-    {
-        _problemDetails = problemDetails;
-    }
+    private readonly IProblemDetailsService _problemDetails = problemDetails;
 
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
