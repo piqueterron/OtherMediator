@@ -68,7 +68,7 @@ public class OtherMediatorFixture : IAsyncLifetime
             });
 
         builder.Services
-            .AddMediator()
+            .AddMediator(c => { })
             .AddMediatorOpenTelemetry()
             .AddExceptionHandler<GlobalExceptionHandler>();
 
