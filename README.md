@@ -42,7 +42,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 var services = new ServiceCollection();
-services.AddMediator();
+services.AddOtherMediator();
 ```
 
 ### 2. Message Definitions

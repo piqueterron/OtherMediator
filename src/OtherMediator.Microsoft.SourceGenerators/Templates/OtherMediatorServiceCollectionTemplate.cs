@@ -29,7 +29,7 @@ public class OtherMediatorServiceCollectionTemplate
                 internal static class OtherMediatorServiceCollectionExtensions
                 {
                     /// <summary>
-                    /// Registers all request handlers with the specified service lifetime.
+                    /// Adds OtherMediator and its handlers to the service collection.
                     /// </summary>
                     /// <param name="services">The service collection.</param>
                     /// <param name="config">An optional configuration action for the mediator.</param>
