@@ -1,4 +1,4 @@
-namespace OtherMediator.Extensions.Microsoft.DependencyInjection;
+namespace OtherMediator;
 
 using OtherMediator.Contracts;
 

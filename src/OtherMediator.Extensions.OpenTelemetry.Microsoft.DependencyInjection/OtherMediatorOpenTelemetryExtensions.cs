@@ -5,7 +5,6 @@ using global::Microsoft.Extensions.DependencyInjection;
 using global::OpenTelemetry.Metrics;
 using global::OpenTelemetry.Trace;
 using OtherMediator.Contracts;
-using OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 /// <summary>
 /// Provides extension methods for logging OpenTelemetry instrumentation

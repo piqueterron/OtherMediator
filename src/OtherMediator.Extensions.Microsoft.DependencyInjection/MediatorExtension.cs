@@ -1,6 +1,7 @@
 namespace OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 using global::Microsoft.Extensions.DependencyInjection;
+using OtherMediator;
 using OtherMediator.Contracts;
 
 /// <summary>
