@@ -5,27 +5,27 @@ using DotNet.Testcontainers.Containers;
 
 public class JaegerContainer
 {
+    public static class Ports
+    {
+        public const int UI = 16686;
+        public const int OTL_GRPC = 4317;
+        public const int OTL_HTTP = 4318;
+        public const int GRPC = 14250;
+    }
+
     public static IContainer JaegerInitialize()
     {
         return new ContainerBuilder()
             .WithImage("jaegertracing/all-in-one:latest")
             .WithName($"jaeger-{Guid.NewGuid()}")
-            .WithPortBinding(JaegerPort.UI, JaegerPort.UI)
-            .WithPortBinding(JaegerPort.OTL_GRPC, true)
-            .WithPortBinding(JaegerPort.OTL_HTTP, true)
-            .WithPortBinding(JaegerPort.GRPC, true)
+            .WithPortBinding(Ports.UI, Ports.UI)
+            .WithPortBinding(Ports.OTL_GRPC, true)
+            .WithPortBinding(Ports.OTL_HTTP, true)
+            .WithPortBinding(Ports.GRPC, true)
             .WithEnvironment("COLLECTOR_OTLP_ENABLED", "true")
             .WithWaitStrategy(Wait.ForUnixContainer()
-                .UntilExternalTcpPortIsAvailable(JaegerPort.UI)
-                .UntilExternalTcpPortIsAvailable(JaegerPort.OTL_GRPC))
+                .UntilExternalTcpPortIsAvailable(Ports.UI)
+                .UntilExternalTcpPortIsAvailable(Ports.OTL_GRPC))
             .Build();
     }
-}
-
-public static class JaegerPort
-{
-    public const int UI = 16686;
-    public const int OTL_GRPC = 4317;
-    public const int OTL_HTTP = 4318;
-    public const int GRPC = 14250;
 }

@@ -5,7 +5,6 @@ using global::Microsoft.Extensions.DependencyInjection;
 using global::OpenTelemetry.Metrics;
 using global::OpenTelemetry.Trace;
 using OtherMediator.Contracts;
-using OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 /// <summary>
 /// Provides extension methods for logging OpenTelemetry instrumentation
@@ -25,7 +24,7 @@ public static class OtherMediatorOpenTelemetryExtensions
     {
         services.AddSingleton<MediatorInstrumentation>();
 
-        var config = new MediatorConfiguration(services);
+        var config = new MediatorConfiguration();//TODO: get from DI container if exists
 
         if (!services.Any((ServiceDescriptor d) => d.ServiceType == typeof(IPipelineBehavior<,>) && d.ImplementationType == typeof(OpenTelemetryPipelineBehavior<,>)))
         {

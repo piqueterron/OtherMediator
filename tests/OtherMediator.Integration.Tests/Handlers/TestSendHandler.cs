@@ -9,7 +9,7 @@ public class TestSendHandler : IRequestHandler<TestRequest, TestResponse>
 {
     public async Task<TestResponse> Handle(TestRequest request, CancellationToken cancellationToken = default)
     {
-        await Task.Delay(1000); //simulating workload
+        await Task.Delay(200); //simulating workload
 
         return new TestResponse
         {
@@ -23,7 +23,7 @@ public class TestUnitSendHandler : IRequestHandler<TestRequestUnit, Unit>
 {
     public async Task<Unit> Handle(TestRequestUnit request, CancellationToken cancellationToken = default)
     {
-        await Task.Delay(1000); //simulating workload
+        await Task.Delay(200); //simulating workload
 
         return Unit.Value;
     }
@@ -33,13 +33,22 @@ public class TestExceptionSendHandler : IRequestHandler<TestExceptionRequest, Te
 {
     public async Task<TestResponse> Handle(TestExceptionRequest request, CancellationToken cancellationToken = default)
     {
-        await Task.Delay(1000); //simulating workload
+        await Task.Delay(200); //simulating workload
 
         throw new Exception("Force throw exception.");
     }
 }
 
 public class TestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
+{
+    public async Task<TResponse> Handle(TRequest request, Func<TRequest, CancellationToken, Task<TResponse>> next, CancellationToken cancellationToken)
+    {
+        return await next(request, cancellationToken);
+    }
+}
+
+public class OpenTestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
     public async Task<TResponse> Handle(TRequest request, Func<TRequest, CancellationToken, Task<TResponse>> next, CancellationToken cancellationToken)
