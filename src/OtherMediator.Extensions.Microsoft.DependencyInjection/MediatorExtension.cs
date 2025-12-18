@@ -15,8 +15,7 @@ public static class MediatorExtension
     /// Adds OtherMediator to the provided <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to register mediator services into.</param>
-    /// <param name="config">An optional configuration action to customize <see cref="MediatorConfiguration"/>.
-    /// If <c>null</c>, services will be discovered and registered automatically from assemblies.</param>
+    /// <param name="config">An optional configuration action to customize <see cref="MediatorConfiguration"/>.</param>
     /// <returns>The original <see cref="IServiceCollection"/> for chaining.</returns>
     /// <remarks>
     /// When <see cref="MediatorConfiguration.UseExceptionHandler"/> is enabled, this method will ensure an
@@ -34,24 +33,6 @@ public static class MediatorExtension
                 services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(ErrorPipelineBehavior<,>), (ServiceLifetime)_mediatorConfiguration.Lifetime));
             }
         }
-
-        services.AddCoreMediator(_mediatorConfiguration);
-
-        return services;
-    }
-
-    /// <summary>
-    /// Adds OtherMediator to the provided <see cref="IServiceCollection"/> when the caller is
-    /// performing manual service registrations.
-    /// </summary>
-    /// <param name="services">The service collection to register mediator services into.</param>
-    /// <param name="setup">An action that performs manual registration of required services into the <paramref name="services"/> collection.</param>
-    /// <param name="config">An optional configuration action to customize <see cref="MediatorConfiguration"/>.
-    /// <returns>The original <see cref="IServiceCollection"/> for chaining.</returns>
-    public static IServiceCollection AddMediatorManualRegistration(this IServiceCollection services, Action<IServiceCollection> setup, Action<MediatorConfiguration>? config)
-    {
-        config?.Invoke(_mediatorConfiguration);
-        setup?.Invoke(services);
 
         services.AddCoreMediator(_mediatorConfiguration);
 
@@ -109,12 +90,9 @@ public static class MediatorExtension
     /// Registers the core <see cref="IMediator"/> implementation into the provided <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to register the mediator into.</param>
-    /// <returns>The modified <see cref="IServiceCollection"/>.</returns>
-    private static IServiceCollection AddCoreMediator(this IServiceCollection services, IMediatorConfiguration mediatorConfiguration)
+    private static void AddCoreMediator(this IServiceCollection services, IMediatorConfiguration mediatorConfiguration)
     {
         services.AddSingleton<IMediator>(sp =>
             new Mediator(new MicrosoftContainer(services), new MiddlewarePipeline(), mediatorConfiguration));
-
-        return services;
     }
 }
