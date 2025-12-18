@@ -12,6 +12,8 @@ public static class MediatorExtension
 {
     private static MediatorConfiguration _mediatorConfiguration = new();
 
+    public static MediatorConfiguration MediatorConfiguration => _mediatorConfiguration;
+
     /// <summary>
     /// Adds OtherMediator to the provided <see cref="IServiceCollection"/>.
     /// </summary>

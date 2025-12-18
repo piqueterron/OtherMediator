@@ -20,7 +20,11 @@ public class OtherMediatorServiceCollectionTemplate
 
                 namespace {{@namespace}};
 
+                using global::System;
                 using global::Microsoft.Extensions.DependencyInjection;
+                using global::OtherMediator.Extensions.Microsoft.DependencyInjection;
+                using global::OtherMediator;
+                using global::OtherMediator.Contracts;
 
                 internal static class OtherMediatorServiceCollectionExtensions
                 {
@@ -28,10 +32,12 @@ public class OtherMediatorServiceCollectionTemplate
                     /// Registers all request handlers with the specified service lifetime.
                     /// </summary>
                     /// <param name="services">The service collection.</param>
-                    /// <param name="lifetime">The service lifetime (default: Scoped).</param>
+                    /// <param name="config">An optional configuration action for the mediator.</param>
                     /// <returns>The service collection for chaining.</returns>
-                    public static IServiceCollection AddOtherMediator(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
+                    public static IServiceCollection AddOtherMediator(this IServiceCollection services, Action<MediatorConfiguration>? config = null)
                     {
+                        services.AddMediator(config);
+
                 {{string.Join("\n", arg.SelectMany(handler =>
                     {
                         var handlerInterfaces = ((ITypeSymbol)handler!).AllInterfaces.ToList();
@@ -43,7 +49,7 @@ public class OtherMediatorServiceCollectionTemplate
                             var implementationFullName = ((ITypeSymbol)handler).ToDisplayString(
                                 SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
 
-                            return $"        services.Add(new ServiceDescriptor(typeof({interfaceFullName}), typeof({implementationFullName}), lifetime));";
+                            return $"        services.Add(new ServiceDescriptor(typeof({interfaceFullName}), typeof({implementationFullName}), (ServiceLifetime)MediatorExtension.MediatorConfiguration.Lifetime));";
                         });
                     }
                 ))}}
@@ -54,6 +60,6 @@ public class OtherMediatorServiceCollectionTemplate
 
                 """;
 
-            ctx.AddSource($"{@namespace}.MediatorServiceCollectionExtensions.g.cs", source);
+            ctx.AddSource($"{@namespace}.ServiceCollectionExtensions.g.cs", source);
         };
 }

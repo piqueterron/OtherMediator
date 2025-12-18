@@ -68,8 +68,7 @@ public class OtherMediatorFixture : IAsyncLifetime
             });
 
         builder.Services
-            .AddOtherMediator()
-            .AddMediator(c =>
+            .AddOtherMediator(c =>
             {
                 c.Lifetime = Lifetime.Scoped;
             })
