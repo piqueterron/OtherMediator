@@ -48,6 +48,15 @@ public class TestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TRe
     }
 }
 
+public class OpenTestPipeline<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IRequest<TResponse>
+{
+    public async Task<TResponse> Handle(TRequest request, Func<TRequest, CancellationToken, Task<TResponse>> next, CancellationToken cancellationToken)
+    {
+        return await next(request, cancellationToken);
+    }
+}
+
 public record TestRequestUnit : IRequest
 {
     public string Value { get; set; }
