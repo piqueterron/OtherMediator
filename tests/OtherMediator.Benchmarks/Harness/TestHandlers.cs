@@ -17,14 +17,9 @@ public class ComplexRequestHandler : MediatR.IRequestHandler<ComplexRequest, Com
     public Task<ComplexResponse> Handle(ComplexRequest request, CancellationToken ct)
     {
         var warnings = new List<string>();
+
         if (request.Items.Count > 10)
             warnings.Add("Many items detected");
-
-        //if (request.Metadata.ContainsKey("priority") &&
-        //    request.Metadata["priority"]?.ToString() == "high")
-        //{
-        //    Thread.Sleep(1);
-        //}
 
         var response = new ComplexResponse(
             RequestId: Guid.NewGuid(),
@@ -77,14 +72,9 @@ public class ComplexRequestHandler2 : OtherMediator.Contracts.IRequestHandler<Co
     public Task<ComplexResponse2> Handle(ComplexRequest2 request, CancellationToken ct)
     {
         var warnings = new List<string>();
+
         if (request.Items.Count > 10)
             warnings.Add("Many items detected");
-
-        //if (request.Metadata.ContainsKey("priority") &&
-        //    request.Metadata["priority"]?.ToString() == "high")
-        //{
-        //    Thread.Sleep(1);
-        //}
 
         var response = new ComplexResponse2(
             RequestId: Guid.NewGuid(),
