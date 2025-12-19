@@ -20,11 +20,11 @@ public class ComplexRequestHandler : MediatR.IRequestHandler<ComplexRequest, Com
         if (request.Items.Count > 10)
             warnings.Add("Many items detected");
 
-        if (request.Metadata.ContainsKey("priority") &&
-            request.Metadata["priority"]?.ToString() == "high")
-        {
-            Thread.Sleep(1);
-        }
+        //if (request.Metadata.ContainsKey("priority") &&
+        //    request.Metadata["priority"]?.ToString() == "high")
+        //{
+        //    Thread.Sleep(1);
+        //}
 
         var response = new ComplexResponse(
             RequestId: Guid.NewGuid(),
@@ -80,11 +80,11 @@ public class ComplexRequestHandler2 : OtherMediator.Contracts.IRequestHandler<Co
         if (request.Items.Count > 10)
             warnings.Add("Many items detected");
 
-        if (request.Metadata.ContainsKey("priority") &&
-            request.Metadata["priority"]?.ToString() == "high")
-        {
-            Thread.Sleep(1);
-        }
+        //if (request.Metadata.ContainsKey("priority") &&
+        //    request.Metadata["priority"]?.ToString() == "high")
+        //{
+        //    Thread.Sleep(1);
+        //}
 
         var response = new ComplexResponse2(
             RequestId: Guid.NewGuid(),

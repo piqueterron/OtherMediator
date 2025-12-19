@@ -1,6 +1,7 @@
 namespace OtherMediator.Benchmarks.Harness;
 
 using BenchmarkDotNet.Attributes;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using OtherMediator;
 
@@ -26,10 +27,7 @@ public class MediatorHarness
     {
         var services = new ServiceCollection();
 
-        services.AddMediatR(cfg => 
-        {
-            cfg.RegisterServicesFromAssembly(typeof(MediatorHarness).Assembly);
-        });
+        services.AddMediatR(typeof(MediatorHarness).Assembly);
 
         _mediatRProvider = services.BuildServiceProvider();
     }

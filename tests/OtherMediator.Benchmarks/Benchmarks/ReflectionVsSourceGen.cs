@@ -4,16 +4,16 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using global::Microsoft.Extensions.DependencyInjection;
+using MediatR;
 using OtherMediator.Benchmarks.Harness;
+using OtherMediator.Contracts;
 
-[MemoryDiagnoser]  // Mide allocations
-[ThreadingDiagnoser] // Analiza comportamiento multi-hilo
+[MemoryDiagnoser]
+[ThreadingDiagnoser]
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-[RankColumn]  // Muestra ranking
-//[SimpleJob(RuntimeMoniker.Net80)]
-//[SimpleJob(RuntimeMoniker.Net90)]
+[RankColumn]
 [SimpleJob]
-public class ReflectionVsSourceGen : MediatorHarness
+public class ReflectionVsSourceGen
 {
     private SimpleRequest _simpleRequest = new(1, "Test Data");
     private ComplexRequest _complexRequest = new(
@@ -30,6 +30,48 @@ public class ReflectionVsSourceGen : MediatorHarness
         new Dictionary<string, object> { ["priority"] = "high" }
     );
     private SimpleNotification2 _notification2 = new("TEST_EVENT", DateTime.UtcNow);
+
+    // ========== BENCHMARK 0: Setup ==========
+
+    private IServiceProvider _otherMediatorProvider = null!;
+    private IServiceProvider _mediatRProvider = null!;
+
+    [GlobalSetup]
+    public void GlobalSetup()
+    {
+        var services1 = new ServiceCollection();
+
+        services1.AddOtherMediator(config =>
+        {
+            config.Lifetime = Lifetime.Scoped;
+        });
+
+        _otherMediatorProvider = services1.BuildServiceProvider();
+
+        var services = new ServiceCollection();
+
+        services.AddScoped<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
+        services.AddScoped<MediatR.IRequestHandler<ComplexRequest, ComplexResponse>, ComplexRequestHandler>();
+        services.AddScoped<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
+        services.AddScoped<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
+
+        services.AddMediatR(typeof(MediatorHarness).Assembly);
+
+        _mediatRProvider = services.BuildServiceProvider();
+    }
+
+    [GlobalCleanup]
+    public void GlobalCleanup()
+    {
+        if (_otherMediatorProvider is IDisposable disposable1)
+        {
+            disposable1.Dispose();
+        }
+        if (_mediatRProvider is IDisposable disposable2)
+        {
+            disposable2.Dispose();
+        }
+    }
 
     // ========== BENCHMARK 1: Simple Request ==========
 
