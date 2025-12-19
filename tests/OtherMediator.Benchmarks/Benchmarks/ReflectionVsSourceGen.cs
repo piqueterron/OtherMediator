@@ -10,8 +10,9 @@ using OtherMediator.Benchmarks.Harness;
 [ThreadingDiagnoser] // Analiza comportamiento multi-hilo
 [Orderer(SummaryOrderPolicy.FastestToSlowest)]
 [RankColumn]  // Muestra ranking
-[SimpleJob(RuntimeMoniker.Net80)]
-[SimpleJob(RuntimeMoniker.Net90)]
+//[SimpleJob(RuntimeMoniker.Net80)]
+//[SimpleJob(RuntimeMoniker.Net90)]
+[SimpleJob]
 public class ReflectionVsSourceGen : MediatorHarness
 {
     private SimpleRequest _simpleRequest = new(1, "Test Data");
