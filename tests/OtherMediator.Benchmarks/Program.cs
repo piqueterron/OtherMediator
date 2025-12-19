@@ -31,6 +31,10 @@ public class Program
         {
             BenchmarkRunner.Run<ConcurrentScenarios>(config);
         }
+        else if (args.Length > 0 && args[0] == "pipelines")
+        {
+            BenchmarkRunner.Run<PipelineOverhead>(config);
+        }
         else
         {
             BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args, config);
