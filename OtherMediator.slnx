@@ -4,7 +4,7 @@
     <Project Path="src/OtherMediator.Extensions.Microsoft.DependencyInjection/OtherMediator.Extensions.Microsoft.DependencyInjection.csproj" />
     <Project Path="src/OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection/OtherMediator.Extensions.OpenTelemetry.Microsoft.DependencyInjection.csproj" />
     <Project Path="src/OtherMediator.Extensions.OpenTelemetry/OtherMediator.Extensions.OpenTelemetry.csproj" />
-    <Project Path="src/OtherMediator.Microsoft.SourceGenerators/OtherMediator.Microsoft.SourceGenerator.csproj" />
+    <Project Path="src/OtherMediator.Microsoft.SourceGenerator/OtherMediator.Microsoft.SourceGenerator.csproj" />
     <Project Path="src/OtherMediator/OtherMediator.csproj" />
   </Folder>
   <Folder Name="/tests/">
