@@ -8,7 +8,9 @@
     <Project Path="src/OtherMediator/OtherMediator.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/OtherMediator.Benchmarks/OtherMediator.Benchmarks.csproj" />
+    <Project Path="tests/OtherMediator.Benchmarks/OtherMediator.Benchmarks.csproj">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
     <Project Path="tests/OtherMediator.Integration.Tests/OtherMediator.Integration.Tests.csproj" />
     <Project Path="tests/OtherMediator.Integration/OtherMediator.Integration.csproj" />
   </Folder>
