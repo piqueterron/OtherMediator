@@ -1,6 +1,7 @@
 namespace OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 using global::Microsoft.Extensions.DependencyInjection;
+using global::Microsoft.Extensions.DependencyInjection.Extensions;
 using OtherMediator;
 using OtherMediator.Contracts;
 
@@ -10,12 +11,10 @@ using OtherMediator.Contracts;
 /// </summary>
 public static class MediatorExtension
 {
-    private static MediatorConfiguration _mediatorConfiguration = new();
-
     /// <summary>
     /// Gets the current <see cref="MediatorConfiguration"/> instance.
     /// </summary>
-    public static MediatorConfiguration MediatorConfiguration => _mediatorConfiguration;
+    public static MediatorConfiguration MediatorConfiguration;
 
     /// <summary>
     /// Adds OtherMediator to the provided <see cref="IServiceCollection"/>.
@@ -42,17 +41,20 @@ public static class MediatorExtension
     /// </example>
     public static IServiceCollection AddMediator(this IServiceCollection services, Action<MediatorConfiguration>? config)
     {
-        config?.Invoke(_mediatorConfiguration);
+        var opt = new MediatorConfiguration();
+        config?.Invoke(opt);
 
-        if (_mediatorConfiguration.UseExceptionHandler)
+        if (opt.UseExceptionHandler)
         {
             if (!services.Any(d => d.ServiceType == typeof(IPipelineBehavior<,>) && d.ImplementationType == typeof(ErrorPipelineBehavior<,>)))
             {
-                services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(ErrorPipelineBehavior<,>), (ServiceLifetime)_mediatorConfiguration.Lifetime));
+                services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(ErrorPipelineBehavior<,>), ServiceLifetime.Singleton));
             }
         }
 
-        services.AddCoreMediator(_mediatorConfiguration);
+        MediatorConfiguration = opt;
+
+        services.AddCoreMediator(opt);
 
         return services;
     }
@@ -86,10 +88,7 @@ public static class MediatorExtension
             throw new ArgumentException("Type must implement IPipelineBehavior<,>.", nameof(type));
         }
 
-        if (!services.Any(s => s.ServiceType == typeof(IPipelineBehavior<,>) && s.ImplementationType == type))
-        {
-            services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), type, (ServiceLifetime)_mediatorConfiguration.Lifetime));
-        }
+        services.TryAddSingleton(typeof(IPipelineBehavior<,>), type);
 
         return services;
     }
@@ -120,10 +119,7 @@ public static class MediatorExtension
 
         var serviceType = typeof(IPipelineBehavior<TRequest, TResponse>);
 
-        if (!services.Any(s => s.ServiceType == serviceType && s.ImplementationType == type))
-        {
-            services.Add(new ServiceDescriptor(serviceType, type, (ServiceLifetime)_mediatorConfiguration.Lifetime));
-        }
+        services.TryAddSingleton(typeof(IPipelineBehavior<TRequest, TResponse>), type);
 
         return services;
     }
@@ -135,6 +131,11 @@ public static class MediatorExtension
     private static void AddCoreMediator(this IServiceCollection services, IMediatorConfiguration mediatorConfiguration)
     {
         services.AddSingleton<IMediator>(sp =>
-            new Mediator(new MicrosoftContainer(services), new MiddlewarePipeline(), mediatorConfiguration));
+        {
+            var container = new MicrosoftContainer(sp);
+            var pipeline = new MiddlewarePipeline();
+
+            return new Mediator(container, pipeline, mediatorConfiguration);
+        });
     }
 }
