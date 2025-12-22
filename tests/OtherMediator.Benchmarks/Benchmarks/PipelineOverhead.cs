@@ -10,6 +10,9 @@ using OtherMediator.Contracts;
 using OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 [MemoryDiagnoser]
+[Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
+[RankColumn]
+[SimpleJob]
 public class PipelineOverhead
 {
     private IServiceProvider _otherMediatorProvider = null!;
@@ -44,31 +47,31 @@ public class PipelineOverhead
         if (PipelineBehaviorsCount >= 1)
         {
             otherMediator.AddOpenPipelineBehavior(typeof(SimpleBehavior1<,>));
-            mediatRSingletonCollection.AddOpenPipelineBehavior(typeof(SimpleBehaviorMediatR1<,>));
+            mediatRSingletonCollection.AddSingleton(typeof(MediatR.IPipelineBehavior<,>), typeof(SimpleBehaviorMediatR1<,>));
         }
 
         if (PipelineBehaviorsCount >= 2)
         {
             otherMediator.AddOpenPipelineBehavior(typeof(SimpleBehavior2<,>));
-            mediatRSingletonCollection.AddOpenPipelineBehavior(typeof(SimpleBehaviorMediatR2<,>));
+            mediatRSingletonCollection.AddSingleton(typeof(MediatR.IPipelineBehavior<,>), typeof(SimpleBehaviorMediatR2<,>));
         }
 
         if (PipelineBehaviorsCount >= 3)
         {
             otherMediator.AddOpenPipelineBehavior(typeof(SimpleBehavior3<,>));
-            mediatRSingletonCollection.AddOpenPipelineBehavior(typeof(SimpleBehaviorMediatR3<,>));
+            mediatRSingletonCollection.AddSingleton(typeof(MediatR.IPipelineBehavior<,>), typeof(SimpleBehaviorMediatR3<,>));
         }
 
         if (PipelineBehaviorsCount >= 4)
         {
             otherMediator.AddOpenPipelineBehavior(typeof(SimpleBehavior4<,>));
-            mediatRSingletonCollection.AddOpenPipelineBehavior(typeof(SimpleBehaviorMediatR4<,>));
+            mediatRSingletonCollection.AddSingleton(typeof(MediatR.IPipelineBehavior<,>), typeof(SimpleBehaviorMediatR4<,>));
         }
 
         if (PipelineBehaviorsCount == 5)
         {
             otherMediator.AddOpenPipelineBehavior(typeof(SimpleBehavior5<,>));
-            mediatRSingletonCollection.AddOpenPipelineBehavior(typeof(SimpleBehaviorMediatR5<,>));
+            mediatRSingletonCollection.AddSingleton(typeof(MediatR.IPipelineBehavior<,>), typeof(SimpleBehaviorMediatR5<,>));
         }
 
         _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();

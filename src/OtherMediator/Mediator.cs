@@ -1,7 +1,6 @@
 namespace OtherMediator;
 
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using OtherMediator.Contracts;
 
 /// <summary>
@@ -16,7 +15,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
     private readonly IMediatorConfiguration _configuration = configuration;
 
     private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
-    private readonly ConcurrentDictionary<Type, Delegate> _publishCache = new();
+    private readonly ConcurrentDictionary<INotification, IEnumerable<Task>> _publishCache = new();
 
     /// <summary>
     /// Publishes a notification to all registered notification handlers asynchronously.
@@ -35,16 +34,14 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var handlerFunc = GetOrAddNotificationHandler<TNotification>();
-
-        var tasks = handlerFunc(notification, cancellationToken);
+        var tasks = GetOrAddPublishers(notification, cancellationToken);
 
         if (_configuration.DispatchStrategy == DispatchStrategy.Parallel)
         {
             await Task.WhenAll(tasks);
         }
 
-        if(_configuration.DispatchStrategy == DispatchStrategy.Sequential)
+        if (_configuration.DispatchStrategy == DispatchStrategy.Sequential)
         {
             foreach (var task in tasks)
             {
@@ -69,7 +66,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
     /// A task that represents the asynchronous send operation, containing the response from the handler.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
-    public async Task<TResponse> Send<TRequest, TResponse>([NotNull] TRequest request, CancellationToken cancellationToken = default)
+    public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest<TResponse>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -94,7 +91,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
     /// A task that represents the asynchronous send operation, containing the response from the handler.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
-    public async Task<Unit> Send<TRequest>([NotNull] TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest<Unit>
+    public async Task<Unit> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest<Unit>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
@@ -123,17 +120,14 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
         });
     }
 
-    private Func<TNotification, CancellationToken, IEnumerable<Task>> GetOrAddNotificationHandler<TNotification>() where TNotification : INotification
+    private IEnumerable<Task> GetOrAddPublishers<TNotification>(TNotification notification, CancellationToken cancellationToken) where TNotification : INotification
     {
-        var notificationType = typeof(TNotification);
-
-        return (Func<TNotification, CancellationToken, IEnumerable<Task>>)_publishCache.GetOrAdd(notificationType, _ =>
+        return _publishCache.GetOrAdd(notification, _ =>
         {
             var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
-            handlers ??= Enumerable.Empty<INotificationHandler<TNotification>>();
+            handlers ??= [];
 
-            return (TNotification notif, CancellationToken ct) =>
-                handlers.Select(handler => handler.Handle(notif, ct)).ToArray();
+            return handlers.Select(handler => handler.Handle(notification, cancellationToken)).ToArray();
         });
     }
 }

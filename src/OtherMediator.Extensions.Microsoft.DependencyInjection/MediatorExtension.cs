@@ -1,7 +1,6 @@
 namespace OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 using global::Microsoft.Extensions.DependencyInjection;
-using global::Microsoft.Extensions.DependencyInjection.Extensions;
 using OtherMediator;
 using OtherMediator.Contracts;
 
@@ -88,7 +87,10 @@ public static class MediatorExtension
             throw new ArgumentException("Type must implement IPipelineBehavior<,>.", nameof(type));
         }
 
-        services.TryAddSingleton(typeof(IPipelineBehavior<,>), type);
+        if (!services.Any(s => s.ServiceType == typeof(IPipelineBehavior<,>) && s.ImplementationType == type))
+        {
+            services.Add(new ServiceDescriptor(typeof(IPipelineBehavior<,>), type, ServiceLifetime.Singleton));
+        }
 
         return services;
     }
@@ -119,7 +121,10 @@ public static class MediatorExtension
 
         var serviceType = typeof(IPipelineBehavior<TRequest, TResponse>);
 
-        services.TryAddSingleton(typeof(IPipelineBehavior<TRequest, TResponse>), type);
+        if (!services.Any(s => s.ServiceType == serviceType && s.ImplementationType == type))
+        {
+            services.Add(new ServiceDescriptor(serviceType, type, ServiceLifetime.Singleton));
+        }
 
         return services;
     }
