@@ -1,8 +1,20 @@
 namespace OtherMediator.Benchmarks.Harness;
 
-public class SimpleRequestHandler : MediatR.IRequestHandler<SimpleRequest, SimpleResponse>
+public class SimpleRequestHandler :
+    MediatR.IRequestHandler<SimpleRequest, SimpleResponse>,
+    OtherMediator.Contracts.IRequestHandler<SimpleRequest, SimpleResponse>
 {
-    public Task<SimpleResponse> Handle(SimpleRequest request, CancellationToken ct)
+    Task<SimpleResponse> MediatR.IRequestHandler<SimpleRequest, SimpleResponse>.Handle(SimpleRequest request, CancellationToken ct)
+    {
+        return HandleCore(request, ct);
+    }
+
+    Task<SimpleResponse> Contracts.IRequestHandler<SimpleRequest, SimpleResponse>.Handle(SimpleRequest request, CancellationToken ct)
+    {
+        return HandleCore(request, ct);
+    }
+
+    private Task<SimpleResponse> HandleCore(SimpleRequest request, CancellationToken ct)
     {
         var response = new SimpleResponse(
             ProcessedData: $"Processed: {request.Data}",
@@ -12,9 +24,23 @@ public class SimpleRequestHandler : MediatR.IRequestHandler<SimpleRequest, Simpl
     }
 }
 
-public class ComplexRequestHandler : MediatR.IRequestHandler<ComplexRequest, ComplexResponse>
+public class ComplexRequestHandler :
+    MediatR.IRequestHandler<ComplexRequest, ComplexResponse>,
+    OtherMediator.Contracts.IRequestHandler<ComplexRequest, ComplexResponse>
 {
-    public Task<ComplexResponse> Handle(ComplexRequest request, CancellationToken ct)
+    Task<ComplexResponse> MediatR.IRequestHandler<ComplexRequest, ComplexResponse>.Handle(
+        ComplexRequest request, CancellationToken ct)
+    {
+        return HandleCore(request);
+    }
+
+    Task<ComplexResponse> OtherMediator.Contracts.IRequestHandler<ComplexRequest, ComplexResponse>.Handle(
+        ComplexRequest request, CancellationToken ct)
+    {
+        return HandleCore(request);
+    }
+
+    private Task<ComplexResponse> HandleCore(ComplexRequest request)
     {
         var warnings = new List<string>();
 
@@ -33,73 +59,46 @@ public class ComplexRequestHandler : MediatR.IRequestHandler<ComplexRequest, Com
     }
 }
 
-public class SimpleNotificationHandler : MediatR.INotificationHandler<SimpleNotification>
+public class SimpleNotificationHandler :
+    MediatR.INotificationHandler<SimpleNotification>,
+    OtherMediator.Contracts.INotificationHandler<SimpleNotification>
 {
-    public Task Handle(SimpleNotification notification, CancellationToken ct)
+    Task MediatR.INotificationHandler<SimpleNotification>.Handle(
+        SimpleNotification notification, CancellationToken ct)
+    {
+        return HandleCore(notification);
+    }
+
+    Task OtherMediator.Contracts.INotificationHandler<SimpleNotification>.Handle(
+        SimpleNotification notification, CancellationToken ct)
+    {
+        return HandleCore(notification);
+    }
+
+    private Task HandleCore(SimpleNotification notification)
     {
         Console.WriteLine($"Notification handled: {notification.EventType}");
         return Task.CompletedTask;
     }
 }
 
-public class SecondNotificationHandler : MediatR.INotificationHandler<SimpleNotification>
+public class SecondNotificationHandler :
+    MediatR.INotificationHandler<SimpleNotification>,
+    OtherMediator.Contracts.INotificationHandler<SimpleNotification>
 {
-    public Task Handle(SimpleNotification notification, CancellationToken ct)
+    Task MediatR.INotificationHandler<SimpleNotification>.Handle(
+        SimpleNotification notification, CancellationToken ct)
     {
-        if (notification.EventType == "ALERT")
-        {
-        }
-        return Task.CompletedTask;
+        return HandleCore(notification);
     }
-}
 
-// Other Mediator Handlers
-
-public class SimpleRequestHandler2 : OtherMediator.Contracts.IRequestHandler<SimpleRequest2, SimpleResponse2>
-{
-    public Task<SimpleResponse2> Handle(SimpleRequest2 request, CancellationToken ct)
+    Task OtherMediator.Contracts.INotificationHandler<SimpleNotification>.Handle(
+        SimpleNotification notification, CancellationToken ct)
     {
-        var response = new SimpleResponse2(
-            ProcessedData: $"Processed: {request.Data}",
-            Timestamp: DateTime.UtcNow
-        );
-        return Task.FromResult(response);
+        return HandleCore(notification);
     }
-}
 
-public class ComplexRequestHandler2 : OtherMediator.Contracts.IRequestHandler<ComplexRequest2, ComplexResponse2>
-{
-    public Task<ComplexResponse2> Handle(ComplexRequest2 request, CancellationToken ct)
-    {
-        var warnings = new List<string>();
-
-        if (request.Items.Count > 10)
-            warnings.Add("Many items detected");
-
-        var response = new ComplexResponse2(
-            RequestId: Guid.NewGuid(),
-            ProcessedItems: request.Items.Count,
-            TotalCost: request.Items.Count * 2.5m,
-            Success: true,
-            Warnings: warnings
-        );
-
-        return Task.FromResult(response);
-    }
-}
-
-public class SimpleNotificationHandler2 : OtherMediator.Contracts.INotificationHandler<SimpleNotification2>
-{
-    public Task Handle(SimpleNotification2 notification, CancellationToken ct)
-    {
-        Console.WriteLine($"Notification handled: {notification.EventType}");
-        return Task.CompletedTask;
-    }
-}
-
-public class SecondNotificationHandler2 : OtherMediator.Contracts.INotificationHandler<SimpleNotification2>
-{
-    public Task Handle(SimpleNotification2 notification, CancellationToken ct)
+    private Task HandleCore(SimpleNotification notification)
     {
         if (notification.EventType == "ALERT")
         {

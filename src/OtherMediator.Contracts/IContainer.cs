@@ -1,12 +1,12 @@
 namespace OtherMediator.Contracts;
 
+using System;
+
 public interface IContainer
 {
-    void Register<TService, TImplementation>(Lifetime lifetime) where TImplementation : TService;
+    T? Resolve<T>() where T : class;
 
-    TService Resolve<TService>();
-
-    IServiceProvider Build();
+    IEnumerable<T>? Resolve<T>(Type type);
 }
 
 public enum Lifetime

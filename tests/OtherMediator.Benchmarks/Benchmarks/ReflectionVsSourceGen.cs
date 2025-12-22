@@ -1,7 +1,6 @@
 namespace OtherMediator.Benchmarks.Benchmarks;
 
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using global::Microsoft.Extensions.DependencyInjection;
 using MediatR;
@@ -23,41 +22,39 @@ public class ReflectionVsSourceGen
     );
     private SimpleNotification _notification = new("TEST_EVENT", DateTime.UtcNow);
 
-    private SimpleRequest2 _simpleRequest2 = new(1, "Test Data");
-    private ComplexRequest2 _complexRequest2 = new(
-        Guid.NewGuid(),
-        Enumerable.Range(1, 5).Select(i => $"Item_{i}").ToList(),
-        new Dictionary<string, object> { ["priority"] = "high" }
-    );
-    private SimpleNotification2 _notification2 = new("TEST_EVENT", DateTime.UtcNow);
-
     // ========== BENCHMARK 0: Setup ==========
 
     private IServiceProvider _otherMediatorProvider = null!;
     private IServiceProvider _mediatRProvider = null!;
+    private Contracts.IMediator _otherMediator;
+    private MediatR.IMediator _mediatR;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-        var services1 = new ServiceCollection();
+        var otherSingletonCollection = new ServiceCollection();
 
-        services1.AddOtherMediator(config =>
+        otherSingletonCollection.AddOtherMediator(config =>
         {
-            config.Lifetime = Lifetime.Scoped;
+            config.Lifetime = Lifetime.Singleton;
+            config.UseExceptionHandler = false;
+            config.DispatchStrategy = DispatchStrategy.Parallel;
         });
 
-        _otherMediatorProvider = services1.BuildServiceProvider();
+        _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
+        _otherMediator = _otherMediatorProvider.GetRequiredService<Contracts.IMediator>();
 
-        var services = new ServiceCollection();
+        var mediatRSingletonCollection = new ServiceCollection();
 
-        services.AddScoped<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
-        services.AddScoped<MediatR.IRequestHandler<ComplexRequest, ComplexResponse>, ComplexRequestHandler>();
-        services.AddScoped<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
-        services.AddScoped<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
+        mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
+        mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<ComplexRequest, ComplexResponse>, ComplexRequestHandler>();
+        mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
+        mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
 
-        services.AddMediatR(typeof(MediatorHarness).Assembly);
+        mediatRSingletonCollection.AddMediatR(typeof(Program).Assembly);
 
-        _mediatRProvider = services.BuildServiceProvider();
+        _mediatRProvider = mediatRSingletonCollection.BuildServiceProvider();
+        _mediatR = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
     }
 
     [GlobalCleanup]
@@ -75,69 +72,61 @@ public class ReflectionVsSourceGen
 
     // ========== BENCHMARK 1: Simple Request ==========
 
-    [Benchmark(Description = "OtherMediator (SourceGen) - Simple Request", Baseline = true)]
-    public async Task<SimpleResponse2> OtherMediatorSourceGen_Simple()
+    [Benchmark(Description = "OtherMediator (SourceGen) - Simple Request (Singleton)", Baseline = true)]
+    public async Task<SimpleResponse> OtherMediatorSourceGen_Simple()
     {
-        var mediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
-        return await mediator.Send<SimpleRequest2, SimpleResponse2>(_simpleRequest2);
+        return await _otherMediator.Send<SimpleRequest, SimpleResponse>(_simpleRequest);
     }
 
-    [Benchmark(Description = "MediatR - Simple Request")]
+    [Benchmark(Description = "MediatR - Simple Request (Singleton)")]
     public async Task<SimpleResponse> MediatRBenchmark_Simple()
     {
-        var mediator = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
-        return await mediator.Send(_simpleRequest);
+        return await _mediatR.Send(_simpleRequest);
     }
 
     // ========== BENCHMARK 2: Complex Request ==========
 
-    [Benchmark(Description = "OtherMediator (SourceGen) - Complex Request")]
-    public async Task<ComplexResponse2> OtherMediatorSourceGen_Complex()
+    [Benchmark(Description = "OtherMediator (SourceGen) - Complex Request (Singleton)")]
+    public async Task<ComplexResponse> OtherMediatorSourceGen_Complex()
     {
-        var mediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
-        return await mediator.Send<ComplexRequest2, ComplexResponse2>(_complexRequest2);
+        return await _otherMediator.Send<ComplexRequest, ComplexResponse>(_complexRequest);
     }
 
-    [Benchmark(Description = "MediatR - Complex Request")]
+    [Benchmark(Description = "MediatR - Complex Request (Singleton)")]
     public async Task<ComplexResponse> MediatRBenchmark_Complex()
     {
-        var mediator = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
-        return await mediator.Send(_complexRequest);
+        return await _mediatR.Send(_complexRequest);
     }
 
     // ========== BENCHMARK 3: Notifications ==========
 
-    [Benchmark(Description = "OtherMediator - Publish Notification (2 handlers)")]
+    [Benchmark(Description = "OtherMediator - Publish Notification (2 handlers) (Singleton)")]
     public async Task OtherMediatorSourceGen_Publish()
     {
-        var mediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
-        await mediator.Publish(_notification2);
+        await _otherMediator.Publish(_notification);
     }
 
-    [Benchmark(Description = "MediatR - Publish Notification (2 handlers)")]
+    [Benchmark(Description = "MediatR - Publish Notification (2 handlers) (Singleton)")]
     public async Task MediatRBenchmark_Publish()
     {
-        var mediator = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
-        await mediator.Publish(_notification);
+        await _mediatR.Publish(_notification);
     }
 
     // ========== BENCHMARK 4: First Call vs Subsequent ==========
 
-    [Benchmark(Description = "OtherMediator (SourceGen) - First Call")]
+    [Benchmark(Description = "OtherMediator (SourceGen) - First Call (Singleton)")]
     public async Task OtherMediatorSourceGen_FirstCall()
     {
-        var mediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
-        await mediator.Send<SimpleRequest2, SimpleResponse2>(_simpleRequest2);
+        await _otherMediator.Send<SimpleRequest, SimpleResponse>(_simpleRequest);
     }
 
-    [Benchmark(Description = "OtherMediator (SourceGen) - Subsequent Calls")]
+    [Benchmark(Description = "OtherMediator (SourceGen) - Subsequent Calls (Singleton)")]
     [IterationCount(100)]
     public async Task OtherMediatorSourceGen_SubsequentCalls()
     {
-        var mediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
-            await mediator.Send<SimpleRequest2, SimpleResponse2>(new SimpleRequest2(i, $"Data_{i}"));
+            await _otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Data_{i}"));
         }
     }
 
@@ -149,6 +138,6 @@ public class ReflectionVsSourceGen
         using var scope = _otherMediatorProvider.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
 
-        await mediator.Send<SimpleRequest2, SimpleResponse2>(new SimpleRequest2(1, "ScopedTest"));
+        await mediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(1, "ScopedTest"));
     }
 }

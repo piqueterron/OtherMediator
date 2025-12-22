@@ -24,11 +24,9 @@ public static class OtherMediatorOpenTelemetryExtensions
     {
         services.AddSingleton<MediatorInstrumentation>();
 
-        var config = new MediatorConfiguration();//TODO: get from DI container if exists
-
         if (!services.Any((ServiceDescriptor d) => d.ServiceType == typeof(IPipelineBehavior<,>) && d.ImplementationType == typeof(OpenTelemetryPipelineBehavior<,>)))
         {
-            services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(OpenTelemetryPipelineBehavior<,>), (ServiceLifetime)config.Lifetime));
+            services.Insert(0, ServiceDescriptor.Describe(typeof(IPipelineBehavior<,>), typeof(OpenTelemetryPipelineBehavior<,>), ServiceLifetime.Singleton));
         }
 
         return services;

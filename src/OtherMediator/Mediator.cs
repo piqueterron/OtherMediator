@@ -1,7 +1,6 @@
 namespace OtherMediator;
 
 using System.Collections.Concurrent;
-using System.Diagnostics.CodeAnalysis;
 using OtherMediator.Contracts;
 
 /// <summary>
@@ -30,19 +29,19 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
     /// <param name="cancellationToken">A token to observe while waiting for the tasks to complete.</param>
     /// <returns>A task that represents the asynchronous publish operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown if the notification is null.</exception>
-    public async Task Publish<TNotification>([NotNull] TNotification notification, CancellationToken cancellationToken = default)
+    public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
         var tasks = GetOrAddPublishers(notification, cancellationToken);
 
-        if(_configuration.DispatchStrategy == DispatchStrategy.Parallel)
+        if (_configuration.DispatchStrategy == DispatchStrategy.Parallel)
         {
             await Task.WhenAll(tasks);
         }
 
-        if(_configuration.DispatchStrategy == DispatchStrategy.Sequential)
+        if (_configuration.DispatchStrategy == DispatchStrategy.Sequential)
         {
             foreach (var task in tasks)
             {
@@ -67,7 +66,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
     /// A task that represents the asynchronous send operation, containing the response from the handler.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
-    public async Task<TResponse> Send<TRequest, TResponse>([NotNull] TRequest request, CancellationToken cancellationToken = default)
+    public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest<TResponse>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
@@ -92,7 +91,7 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
     /// A task that represents the asynchronous send operation, containing the response from the handler.
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
-    public async Task<Unit> Send<TRequest>([NotNull] TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest<Unit>
+    public async Task<Unit> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest<Unit>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 

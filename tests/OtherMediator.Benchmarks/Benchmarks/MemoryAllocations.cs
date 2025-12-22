@@ -14,29 +14,37 @@ public class MemoryAllocations
 
     private IServiceProvider _otherMediatorProvider = null!;
     private IServiceProvider _mediatRProvider = null!;
+    private Contracts.IMediator _otherMediator;
+    private MediatR.IMediator _mediatR;
 
     [GlobalSetup]
     public void GlobalSetup()
     {
-        var services1 = new ServiceCollection();
+        var otherSingletonCollection = new ServiceCollection();
 
-        services1.AddOtherMediator(config =>
+        otherSingletonCollection.AddOtherMediator(config =>
         {
-            config.Lifetime = Lifetime.Scoped;
+            config.Lifetime = Lifetime.Singleton;
+            config.UseExceptionHandler = false;
+            config.DispatchStrategy = DispatchStrategy.Parallel;
         });
 
-        _otherMediatorProvider = services1.BuildServiceProvider();
+        _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
 
-        var services = new ServiceCollection();
+        _otherMediator = _otherMediatorProvider.GetRequiredService<Contracts.IMediator>();
 
-        services.AddScoped<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
-        services.AddScoped<MediatR.IRequestHandler<ComplexRequest, ComplexResponse>, ComplexRequestHandler>();
-        services.AddScoped<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
-        services.AddScoped<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
+        var mediatRSingletonCollection = new ServiceCollection();
 
-        services.AddMediatR(typeof(MediatorHarness).Assembly);
+        mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
+        mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<ComplexRequest, ComplexResponse>, ComplexRequestHandler>();
+        mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
+        mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
 
-        _mediatRProvider = services.BuildServiceProvider();
+        mediatRSingletonCollection.AddMediatR(typeof(Program).Assembly);
+
+        _mediatRProvider = mediatRSingletonCollection.BuildServiceProvider();
+
+        _mediatR = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
     }
 
     [GlobalCleanup]
@@ -52,25 +60,21 @@ public class MemoryAllocations
         }
     }
 
-    [Benchmark(Description = "OtherMediator (SourceGen) - 1000 requests")]
+    [Benchmark(Description = "OtherMediator (SourceGen) - 1000 requests (Singleton)")]
     public async Task OtherMediatorSourceGen_MemoryProfile()
     {
-        var mediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
-
-        for (int i = 0; i < Iterations; i++)
+        for (var i = 0; i < Iterations; i++)
         {
-            await mediator.Send<SimpleRequest2, SimpleResponse2>(new SimpleRequest2(i, $"Data_{i}"));
+            await _otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Data_{i}"));
         }
     }
 
-    [Benchmark(Description = "MediatR - 1000 requests")]
+    [Benchmark(Description = "MediatR - 1000 requests (Singleton)")]
     public async Task MediatRBenchmark_MemoryProfile()
     {
-        var mediator = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
-
-        for (int i = 0; i < Iterations; i++)
+        for (var i = 0; i < Iterations; i++)
         {
-            await mediator.Send(new SimpleRequest(i, $"Data_{i}"));
+            await _mediatR.Send(new SimpleRequest(i, $"Data_{i}"));
         }
     }
 }

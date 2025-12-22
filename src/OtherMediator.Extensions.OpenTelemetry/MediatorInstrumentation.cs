@@ -5,8 +5,8 @@ using System.Diagnostics.Metrics;
 
 public class MediatorInstrumentation
 {
-    public const string SERVICE_NAME = "Mediator";
-    public const string SERVICE_VERSION = "0.2.0";
+    public const string SERVICE_NAME = "OtherMediator";
+    public const string SERVICE_VERSION = "0.3.0";
 
     private static IEnumerable<KeyValuePair<string, object?>> _tags =
         [
