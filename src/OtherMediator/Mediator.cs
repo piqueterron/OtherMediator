@@ -1,40 +1,21 @@
 namespace OtherMediator;
 
-using System.Collections.Concurrent;
 using OtherMediator.Contracts;
 
-/// <summary>
-/// Represents the core mediator implementation responsible for handling the publishing of notifications
-/// and sending of requests within the application. This class coordinates the resolution of handlers
-/// and the execution of middleware pipelines, enabling decoupled communication between components.
-/// </summary>
-public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, IMediatorConfiguration configuration) : IMediator
+public sealed class Mediator(IMediatorConfiguration configuration) : IMediator
 {
-    private readonly MiddlewarePipeline _pipeline = pipeline;
-    private readonly IContainer _container = container;
     private readonly IMediatorConfiguration _configuration = configuration;
 
-    private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
-    private readonly ConcurrentDictionary<INotification, IEnumerable<Task>> _publishCache = new();
-
-    /// <summary>
-    /// Publishes a notification to all registered notification handlers asynchronously.
-    /// This method resolves all handlers for the specified notification type and invokes their
-    /// <c>Handle</c> method, allowing multiple handlers to process the notification concurrently.
-    /// </summary>
-    /// <typeparam name="TNotification">
-    /// The type of the notification being published. Must implement <see cref="INotification"/>.
-    /// </typeparam>
-    /// <param name="notification">The notification instance to be published.</param>
-    /// <param name="cancellationToken">A token to observe while waiting for the tasks to complete.</param>
-    /// <returns>A task that represents the asynchronous publish operation.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if the notification is null.</exception>
     public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var tasks = GetOrAddPublishers(notification, cancellationToken);
+        //var handlers = WarmMediator.GetNotificationHandlerCache()[typeof(TNotification)] as IEnumerable<Func<INotification, CancellationToken, Task>>;
+
+        var handlers = WarmMediator.GetNotificationHandler(typeof(TNotification)) as IEnumerable<Func<TNotification, CancellationToken, Task>>;
+
+        var tasks = handlers!.Select(task => task(notification, cancellationToken)).ToArray();
 
         if (_configuration.DispatchStrategy == DispatchStrategy.Parallel)
         {
@@ -51,83 +32,23 @@ public sealed class Mediator(IContainer container, MiddlewarePipeline pipeline, 
         }
     }
 
-    /// <summary>
-    /// Sends a request to the appropriate request handler and returns a response asynchronously.
-    /// This method utilizes a middleware pipeline and caches sender delegates for improved performance.
-    /// It resolves the handler and any pipeline behaviors, then executes the request through the pipeline.
-    /// </summary>
-    /// <typeparam name="TRequest">
-    /// The type of the request being sent. Must implement <see cref="IRequest{TResponse}"/>.
-    /// </typeparam>
-    /// <typeparam name="TResponse">The type of the response expected from the handler.</typeparam>
-    /// <param name="request">The request instance to be sent.</param>
-    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns>
-    /// A task that represents the asynchronous send operation, containing the response from the handler.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
     public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest<TResponse>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var sender = GetOrAddHandler<TRequest, TResponse>();
+        var sender = WarmMediator.GetRequestHandler(typeof(TRequest), typeof(TResponse)) as Func<TRequest, CancellationToken, Task<TResponse>>;
 
-        return await sender(request, cancellationToken);
+        return await sender!(request, cancellationToken);
     }
 
-    /// <summary>
-    /// Sends a request to the appropriate request handler and returns a response asynchronously.
-    /// This method utilizes a middleware pipeline and caches sender delegates for improved performance.
-    /// It resolves the handler and any pipeline behaviors, then executes the request through the pipeline.
-    /// </summary>
-    /// <typeparam name="TRequest">
-    /// The type of the request being sent. Must implement <see cref="IRequest{Unit}"/>.
-    /// </typeparam>
-    /// <typeparam name="Unit">The type of the response expected from the handler.</typeparam>
-    /// <param name="request">The request instance to be sent.</param>
-    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
-    /// <returns>
-    /// A task that represents the asynchronous send operation, containing the response from the handler.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">Thrown if the request is null or handler not register.</exception>
-    public async Task<Unit> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default) where TRequest : IRequest<Unit>
+    public async Task<Unit> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+        where TRequest : IRequest<Unit>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var sender = GetOrAddHandler<TRequest, Unit>();
+        var sender = WarmMediator.GetRequestHandler(typeof(TRequest), typeof(Unit)) as Func<TRequest, CancellationToken, Task<Unit>>;
 
-        return await sender(request, cancellationToken);
-    }
-
-    private Func<TRequest, CancellationToken, Task<TResponse>> GetOrAddHandler<TRequest, TResponse>() where TRequest : IRequest<TResponse>
-    {
-        var key = (typeof(TRequest), typeof(TResponse));
-
-        return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(key, _ =>
-        {
-            var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
-
-            if (handler is null)
-            {
-                throw new InvalidOperationException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
-            }
-
-            var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
-            pipelines ??= [];
-
-            return _pipeline.BuildPipeline(handler, pipelines);
-        });
-    }
-
-    private IEnumerable<Task> GetOrAddPublishers<TNotification>(TNotification notification, CancellationToken cancellationToken) where TNotification : INotification
-    {
-        return _publishCache.GetOrAdd(notification, _ =>
-        {
-            var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
-            handlers ??= [];
-
-            return handlers.Select(handler => handler.Handle(notification, cancellationToken)).ToArray();
-        });
+        return await sender!(request, cancellationToken);
     }
 }

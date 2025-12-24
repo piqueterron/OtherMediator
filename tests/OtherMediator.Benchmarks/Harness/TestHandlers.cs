@@ -9,7 +9,7 @@ public class SimpleRequestHandler :
         return HandleCore(request, ct);
     }
 
-    Task<SimpleResponse> Contracts.IRequestHandler<SimpleRequest, SimpleResponse>.Handle(SimpleRequest request, CancellationToken ct)
+    Task<SimpleResponse> Contracts.IRequestHandler<SimpleRequest, SimpleResponse>.HandleAsync(SimpleRequest request, CancellationToken ct)
     {
         return HandleCore(request, ct);
     }
@@ -34,7 +34,7 @@ public class ComplexRequestHandler :
         return HandleCore(request);
     }
 
-    Task<ComplexResponse> OtherMediator.Contracts.IRequestHandler<ComplexRequest, ComplexResponse>.Handle(
+    Task<ComplexResponse> OtherMediator.Contracts.IRequestHandler<ComplexRequest, ComplexResponse>.HandleAsync(
         ComplexRequest request, CancellationToken ct)
     {
         return HandleCore(request);

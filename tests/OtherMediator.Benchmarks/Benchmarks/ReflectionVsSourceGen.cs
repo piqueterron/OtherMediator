@@ -100,17 +100,17 @@ public class ReflectionVsSourceGen
 
     // ========== BENCHMARK 3: Notifications ==========
 
-    [Benchmark(Description = "OtherMediator - Publish Notification (2 handlers) (Singleton)")]
-    public async Task OtherMediatorSourceGen_Publish()
-    {
-        await _otherMediator.Publish(_notification);
-    }
+    //[Benchmark(Description = "OtherMediator - Publish Notification (2 handlers) (Singleton)")]
+    //public async Task OtherMediatorSourceGen_Publish()
+    //{
+    //    await _otherMediator.Publish(_notification);
+    //}
 
-    [Benchmark(Description = "MediatR - Publish Notification (2 handlers) (Singleton)")]
-    public async Task MediatRBenchmark_Publish()
-    {
-        await _mediatR.Publish(_notification);
-    }
+    //[Benchmark(Description = "MediatR - Publish Notification (2 handlers) (Singleton)")]
+    //public async Task MediatRBenchmark_Publish()
+    //{
+    //    await _mediatR.Publish(_notification);
+    //}
 
     // ========== BENCHMARK 4: First Call vs Subsequent ==========
 
