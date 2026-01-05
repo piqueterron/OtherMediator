@@ -64,12 +64,11 @@ public class OtherMediatorStartupTemplate
 
                                 return $$"""
                                             var notificationHandler_{{index}} = ({{interfaceFullName}})builder.ApplicationServices.GetService(typeof({{interfaceFullName}}));
-                                            //var behaviors_{{index}} = (IEnumerable<IPipelineBehavior<{{arg0}}>>)builder.ApplicationServices.GetServices(typeof(IPipelineBehavior<{{arg0}}>));
-                                            IEnumerable<IPipelineBehavior<{{arg0}}>> t_{{index}} = new List<IPipelineBehavior<{{arg0}}>>();
-                                            //WarmMediator.WarmNotificationHandlers<{{arg0}}>(notificationHandler_{{index}}, t_{{index}});
+                                            var behaviors_{{index}} = builder.ApplicationServices.GetServices<IPipelineBehavior<{{arg0}}>>();
+
                                             if (notificationHandler_{{index}} is not null)
                                             {
-                                                WarmMediator.WarmNotificationHandlers<{{arg0}}>(notificationHandler_{{index}}, t_{{index}});
+                                                WarmMediator.WarmNotificationHandlers<{{arg0}}>(notificationHandler_{{index}}, behaviors_{{index}});
                                             }
                                 """;
                             }
@@ -80,12 +79,11 @@ public class OtherMediatorStartupTemplate
 
                                 return $$"""
                                             var requestHandler_{{index}} = builder.ApplicationServices.GetService<{{interfaceFullName}}>();
-                                            //var behaviors_{{index}} = builder.ApplicationServices.GetServices<IPipelineBehavior<{{arg0}}, {{arg1}}>>();
-                                            IEnumerable<IPipelineBehavior<{{arg0}}, {{arg1}}>> t_{{index}} = new List<IPipelineBehavior<{{arg0}}, {{arg1}}>>();
-                                            //WarmMediator.WarmRequestHandlers<{{arg0}}, {{arg1}}>(requestHandler_{{index}}, t_{{index}});
+                                            var behaviors_{{index}} = builder.ApplicationServices.GetServices<IPipelineBehavior<{{arg0}}, {{arg1}}>>();
+
                                             if (requestHandler_{{index}} is not null)
                                             {
-                                                WarmMediator.WarmRequestHandlers<{{arg0}}, {{arg1}}>(requestHandler_{{index}}, t_{{index}});
+                                                WarmMediator.WarmRequestHandlers<{{arg0}}, {{arg1}}>(requestHandler_{{index}}, behaviors_{{index}});
                                             }
 
                                 """;

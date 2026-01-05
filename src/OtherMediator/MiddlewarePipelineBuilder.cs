@@ -4,7 +4,9 @@ using OtherMediator.Contracts;
 
 internal static class MiddlewarePipelineBuilder
 {
-    public static Func<TRequest, CancellationToken, Task<TResponse>> BuildPipeline<TRequest, TResponse>(IRequestHandler<TRequest, TResponse> handler, IEnumerable<IPipelineBehavior<TRequest, TResponse>> pipelines)
+    public static Func<TRequest, CancellationToken, Task<TResponse>> BuildPipeline<TRequest, TResponse>(
+        IRequestHandler<TRequest, TResponse> handler,
+        IEnumerable<IPipelineBehavior<TRequest, TResponse>> pipelines)
         where TRequest : IRequest<TResponse>
     {
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
@@ -14,7 +16,9 @@ internal static class MiddlewarePipelineBuilder
 
         foreach (var behavior in pipelines.Reverse())
         {
-            step = (req, ct) => behavior.Handle(req, step, ct);
+            var next = step;
+            var b = behavior;
+            step = (req, ct) => b.Handle(req, next, ct);
         }
 
         return step;
@@ -30,7 +34,9 @@ internal static class MiddlewarePipelineBuilder
 
         foreach (var behavior in pipelines.Reverse())
         {
-            step = (req, ct) => behavior.Handle(req, step, ct);
+            var next = step;
+            var b = behavior;
+            step = (req, ct) => b.Handle(req, next, ct);
         }
 
         return step;
