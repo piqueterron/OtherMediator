@@ -7,16 +7,17 @@ using MediatR;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
 
-[SimpleJob(RunStrategy.ColdStart, iterationCount: 5)]
+[SimpleJob(RunStrategy.Throughput, iterationCount: 10)]
 [ThreadingDiagnoser]
 public class ConcurrentScenarios
 {
     private IServiceProvider _otherMediatorProvider = null!;
     private IServiceProvider _mediatRProvider = null!;
+
     private Contracts.IMediator _otherMediator;
     private MediatR.IMediator _mediatR;
 
-    [Params(1, 10, 100)]
+    [Params(1, 10, 100, 1000, 10000)]
     public int ConcurrentRequests { get; set; }
 
     [GlobalSetup]
@@ -33,6 +34,8 @@ public class ConcurrentScenarios
 
         _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
 
+        WarmUpHandlers();
+
         _otherMediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
 
         var mediatRSingletonCollection = new ServiceCollection();
@@ -47,6 +50,28 @@ public class ConcurrentScenarios
         _mediatRProvider = mediatRSingletonCollection.BuildServiceProvider();
 
         _mediatR = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
+    }
+
+    private void WarmUpHandlers()
+    {
+        var simpleHandler = _otherMediatorProvider.GetRequiredService<
+            Contracts.IRequestHandler<SimpleRequest, SimpleResponse>>();
+        var complexHandler = _otherMediatorProvider.GetRequiredService<
+            Contracts.IRequestHandler<ComplexRequest, ComplexResponse>>();
+        var notificationHandlers = _otherMediatorProvider.GetServices<
+            Contracts.INotificationHandler<SimpleNotification>>().ToList();
+
+        var simpleBehaviors = new List<Contracts.IPipelineBehavior<SimpleRequest, SimpleResponse>>();
+        var complexBehaviors = new List<Contracts.IPipelineBehavior<ComplexRequest, ComplexResponse>>();
+        var notificationBehaviors = new List<IPipelineBehavior<SimpleNotification>>();
+
+        WarmMediator.WarmRequestHandlers(simpleHandler, simpleBehaviors);
+        WarmMediator.WarmRequestHandlers(complexHandler, complexBehaviors);
+
+        foreach (var notificationHandler in notificationHandlers)
+        {
+            WarmMediator.WarmNotificationHandlers(notificationHandler, notificationBehaviors);
+        }
     }
 
     [GlobalCleanup]
@@ -69,7 +94,7 @@ public class ConcurrentScenarios
 
         for (var i = 0; i < ConcurrentRequests; i++)
         {
-            tasks.Add(_otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Concurrent_{i}")));
+            tasks.Add(_otherMediator.Send(new SimpleRequest(i, $"Concurrent_{i}")));
         }
 
         await Task.WhenAll(tasks);
@@ -78,16 +103,16 @@ public class ConcurrentScenarios
     [Benchmark(Description = "OtherMediator - Sequential vs Concurrent (Singleton)")]
     public async Task SequentialVsConcurrent_Comparison()
     {
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < ConcurrentRequests; i++)
         {
-            await _otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Sequential_{i}"));
+            await _otherMediator.Send(new SimpleRequest(i, $"Sequential_{i}"));
         }
 
         var concurrentTasks = new Task[ConcurrentRequests];
 
         for (var i = 0; i < ConcurrentRequests; i++)
         {
-            concurrentTasks[i] = _otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Concurrent_{i}"));
+            concurrentTasks[i] = _otherMediator.Send(new SimpleRequest(i, $"Concurrent_{i}"));
         }
 
         await Task.WhenAll(concurrentTasks);
@@ -109,7 +134,7 @@ public class ConcurrentScenarios
     [Benchmark(Description = "MediatR - Sequential vs Concurrent (Singleton)")]
     public async Task MediatR_Comparison()
     {
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < ConcurrentRequests; i++)
         {
             await _mediatR.Send(new SimpleRequest(i, $"Sequential_{i}"));
         }

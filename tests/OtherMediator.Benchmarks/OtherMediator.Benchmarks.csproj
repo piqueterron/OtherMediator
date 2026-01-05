@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <PackageReference Include="BenchmarkDotNet" />
     <PackageReference Include="MediatR" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" />

@@ -12,7 +12,7 @@ public class OtherMediatorPublishShould(OtherMediatorFixture fixture)
 {
     private readonly HttpClient _httpClient = fixture.Client;
 
-    [Fact(Skip = "Fixing IOC source generation", DisplayName = "When publishing a message to all subscribers, a request should be given that invokes all listeners and provides them with a copy of the message.")]
+    [Fact(DisplayName = "When publishing a message to all subscribers, a request should be given that invokes all listeners and provides them with a copy of the message.")]
     public async Task GiveRequest_WhenPublishMessageWithManySubscribers_ShouldExecuteAllHandlersListenin()
     {
         await MonitorManager.InitializeAsync(2);

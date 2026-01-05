@@ -42,6 +42,8 @@ public class OtherMediatorStartupTemplate
                     {
                         var handlerInterfaces = ((ITypeSymbol)handler!).AllInterfaces.ToList();
 
+                        var implementationFullName = ((ITypeSymbol)handler).ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
+
                         return handlerInterfaces.Select(handlerInterface =>
                         {
                             var interfaceFullName = handlerInterface.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
@@ -62,10 +64,13 @@ public class OtherMediatorStartupTemplate
 
                                 return $$"""
                                             var notificationHandler_{{index}} = ({{interfaceFullName}})builder.ApplicationServices.GetService(typeof({{interfaceFullName}}));
-                                            //var behaviors_{{index}} = (IEnumerable<IPipelineBehavior<{{arg0}}>>)builder.ApplicationServices.GetServices(typeof({{interfaceFullName}}));
+                                            //var behaviors_{{index}} = (IEnumerable<IPipelineBehavior<{{arg0}}>>)builder.ApplicationServices.GetServices(typeof(IPipelineBehavior<{{arg0}}>));
                                             IEnumerable<IPipelineBehavior<{{arg0}}>> t_{{index}} = new List<IPipelineBehavior<{{arg0}}>>();
-                                            WarmMediator.WarmNotificationHandlers<{{arg0}}>(notificationHandler_{{index}}, t_{{index}});
-                                            //WarmMediator.WarmNotificationHandlers<{{arg0}}>(notificationHandler_{{index}}, behaviors_{{index}});
+                                            //WarmMediator.WarmNotificationHandlers<{{arg0}}>(notificationHandler_{{index}}, t_{{index}});
+                                            if (notificationHandler_{{index}} is not null)
+                                            {
+                                                WarmMediator.WarmNotificationHandlers<{{arg0}}>(notificationHandler_{{index}}, t_{{index}});
+                                            }
                                 """;
                             }
                             else
@@ -74,11 +79,14 @@ public class OtherMediatorStartupTemplate
                                 var arg1 = handlerInterface.TypeArguments[1].ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted));
 
                                 return $$"""
-                                            var requestHandler_{{index}} = ({{interfaceFullName}})builder.ApplicationServices.GetService(typeof({{interfaceFullName}}));
-                                            //var behaviors_{{index}} = (IEnumerable<IPipelineBehavior<{{arg0}}, {{arg1}}>>)builder.ApplicationServices.GetServices(typeof({{interfaceFullName}}));
+                                            var requestHandler_{{index}} = builder.ApplicationServices.GetService<{{interfaceFullName}}>();
+                                            //var behaviors_{{index}} = builder.ApplicationServices.GetServices<IPipelineBehavior<{{arg0}}, {{arg1}}>>();
                                             IEnumerable<IPipelineBehavior<{{arg0}}, {{arg1}}>> t_{{index}} = new List<IPipelineBehavior<{{arg0}}, {{arg1}}>>();
-                                            WarmMediator.WarmRequestHandlers<{{arg0}}, {{arg1}}>(requestHandler_{{index}}, t_{{index}});
-                                            //WarmMediator.WarmRequestHandlers<{{arg0}}, {{arg1}}>(requestHandler_{{index}}, behaviors_{{index}});
+                                            //WarmMediator.WarmRequestHandlers<{{arg0}}, {{arg1}}>(requestHandler_{{index}}, t_{{index}});
+                                            if (requestHandler_{{index}} is not null)
+                                            {
+                                                WarmMediator.WarmRequestHandlers<{{arg0}}, {{arg1}}>(requestHandler_{{index}}, t_{{index}});
+                                            }
 
                                 """;
                             }

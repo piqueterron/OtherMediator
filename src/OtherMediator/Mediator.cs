@@ -11,11 +11,16 @@ public sealed class Mediator(IMediatorConfiguration configuration) : IMediator
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        //var handlers = WarmMediator.GetNotificationHandlerCache()[typeof(TNotification)] as IEnumerable<Func<INotification, CancellationToken, Task>>;
+        var delegates = WarmMediator.GetNotificationHandlers(typeof(TNotification));
 
-        var handlers = WarmMediator.GetNotificationHandler(typeof(TNotification)) as IEnumerable<Func<TNotification, CancellationToken, Task>>;
+        var handlers = delegates?.Select(d => (Func<object, CancellationToken, Task>)d).ToArray();
 
-        var tasks = handlers!.Select(task => task(notification, cancellationToken)).ToArray();
+        if (handlers is null || handlers.Length == 0)
+        {
+            return;
+        }
+
+        var tasks = handlers.Select(task => task(notification, cancellationToken)).ToArray();
 
         if (_configuration.DispatchStrategy == DispatchStrategy.Parallel)
         {
@@ -32,23 +37,35 @@ public sealed class Mediator(IMediatorConfiguration configuration) : IMediator
         }
     }
 
-    public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest<TResponse>
+    public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var sender = WarmMediator.GetRequestHandler(typeof(TRequest), typeof(TResponse)) as Func<TRequest, CancellationToken, Task<TResponse>>;
+        var requestType = request.GetType();
 
-        return await sender!(request, cancellationToken);
+        var sender = WarmMediator.GetRequestHandler(requestType, typeof(TResponse)) as Func<object, CancellationToken, Task<TResponse>>;
+
+        if (sender is null)
+        {
+            throw new InvalidOperationException($"No request handler registered for {requestType.Name} -> {typeof(TResponse).Name}");
+        }
+
+        return await sender(request, cancellationToken);
     }
 
-    public async Task<Unit> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest<Unit>
+    public async Task<Unit> Send(IRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var sender = WarmMediator.GetRequestHandler(typeof(TRequest), typeof(Unit)) as Func<TRequest, CancellationToken, Task<Unit>>;
+        var requestType = request.GetType();
 
-        return await sender!(request, cancellationToken);
+        var sender = WarmMediator.GetRequestHandler(requestType, typeof(Unit)) as Func<object, CancellationToken, Task<Unit>>;
+
+        if (sender is null)
+        {
+            throw new InvalidOperationException($"No request handler registered for {requestType.Name} -> {typeof(Unit).Name}");
+        }
+
+        return await sender(request, cancellationToken);
     }
 }

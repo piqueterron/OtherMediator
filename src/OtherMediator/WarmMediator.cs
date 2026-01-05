@@ -7,7 +7,7 @@ using OtherMediator.Contracts;
 public static class WarmMediator
 {
     private static readonly ConcurrentDictionary<(Type Request, Type Response), Func<Delegate>> _senderCache = new();
-    private static readonly ConcurrentDictionary<Type, Func<Delegate>> _publishCache = new();
+    private static readonly ConcurrentDictionary<Type, List<Delegate>> _publishCache = new();
 
     public static void WarmRequestHandlers<TRequest, TResponse>(IRequestHandler<TRequest, TResponse> requestHandler, IEnumerable<IPipelineBehavior<TRequest, TResponse>>? pipelineBehaviors)
         where TRequest : IRequest<TResponse>
@@ -17,17 +17,13 @@ public static class WarmMediator
         where TNotification : INotification
             => CachingNotificationHandlers(requestHandler, pipelineBehaviors);
 
-    public static ConcurrentDictionary<Type, Delegate> GetNotificationHandlerCache() => new();
-
-    public static ConcurrentDictionary<(Type Request, Type Response), Delegate> GetRequestHandlerCache() => new();
-
-    public static Delegate? GetNotificationHandler(Type notification)
+    public static IEnumerable<Delegate>? GetNotificationHandlers(Type notification)
     {
         var key = notification;
 
-        if (_publishCache.TryGetValue(key, out var func))
+        if (_publishCache.TryGetValue(key, out var list))
         {
-            return func();
+            return list;
         }
 
         return null;
@@ -61,7 +57,11 @@ public static class WarmMediator
 
             pipelineBehaviors ??= [];
 
-            return MiddlewarePipelineBuilder.BuildPipeline(requestHandler, pipelineBehaviors);
+            var typed = MiddlewarePipelineBuilder.BuildPipeline(requestHandler, pipelineBehaviors);
+
+            Func<object, CancellationToken, Task<TResponse>> wrapper = (obj, ct) => typed((TRequest)obj, ct);
+
+            return wrapper;
         });
     }
 
@@ -72,16 +72,27 @@ public static class WarmMediator
     {
         var key = typeof(TNotification);
 
-        _publishCache.TryAdd(key, () =>
-        {
             if (requestHandler is null)
             {
                 throw new InvalidOperationException($"Make sure to register an INotificationHandler<{typeof(TNotification).Name}> in the dependency container.");
             }
 
-            pipelineBehaviors ??= [];
+        pipelineBehaviors ??= Array.Empty<IPipelineBehavior<TNotification>>();
 
-            return MiddlewarePipelineBuilder.BuildPipeline(requestHandler, pipelineBehaviors);
-        });
+        var typed = MiddlewarePipelineBuilder.BuildPipeline(requestHandler, pipelineBehaviors);
+
+        Func<object, CancellationToken, Task> wrapper = (obj, ct) => typed((TNotification)obj, ct);
+
+        _publishCache.AddOrUpdate(key,
+            _ => new List<Delegate> { wrapper },
+            (_, existing) =>
+            {
+                lock (existing)
+                {
+                    existing.Add(wrapper);
+                }
+
+                return existing;
+            });
     }
 }
