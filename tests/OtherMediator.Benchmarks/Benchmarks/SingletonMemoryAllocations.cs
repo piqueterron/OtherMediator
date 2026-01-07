@@ -3,12 +3,13 @@ namespace OtherMediator.Benchmarks.Benchmarks;
 using BenchmarkDotNet.Attributes;
 using global::Microsoft.Extensions.DependencyInjection;
 using MediatR;
+using OtherMediator.Benchmarks.Extensions;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
 
 [MemoryDiagnoser]
 [MemoryRandomization]
-public class MemoryAllocations
+public class SingletonMemoryAllocations
 {
     private const int Iterations = 1000;
 
@@ -31,7 +32,7 @@ public class MemoryAllocations
 
         _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
 
-        WarmUpHandlers();
+        WarmUpExtensions.WarmUpDefault(_otherMediatorProvider);
 
         _otherMediator = _otherMediatorProvider.GetRequiredService<Contracts.IMediator>();
 
@@ -49,28 +50,6 @@ public class MemoryAllocations
         _mediatR = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
     }
 
-    private void WarmUpHandlers()
-    {
-        var simpleHandler = _otherMediatorProvider.GetRequiredService<
-            Contracts.IRequestHandler<SimpleRequest, SimpleResponse>>();
-        var complexHandler = _otherMediatorProvider.GetRequiredService<
-            Contracts.IRequestHandler<ComplexRequest, ComplexResponse>>();
-        var notificationHandlers = _otherMediatorProvider.GetServices<
-            Contracts.INotificationHandler<SimpleNotification>>().ToList();
-
-        var simpleBehaviors = new List<Contracts.IPipelineBehavior<SimpleRequest, SimpleResponse>>();
-        var complexBehaviors = new List<Contracts.IPipelineBehavior<ComplexRequest, ComplexResponse>>();
-        var notificationBehaviors = new List<IPipelineBehavior<SimpleNotification>>();
-
-        WarmMediator.WarmRequestHandlers(simpleHandler, simpleBehaviors);
-        WarmMediator.WarmRequestHandlers(complexHandler, complexBehaviors);
-
-        foreach (var notificationHandler in notificationHandlers)
-        {
-            WarmMediator.WarmNotificationHandlers(notificationHandler, notificationBehaviors);
-        }
-    }
-
     [GlobalCleanup]
     public void GlobalCleanup()
     {
@@ -84,7 +63,7 @@ public class MemoryAllocations
         }
     }
 
-    [Benchmark(Description = "OtherMediator (SourceGen) - 1000 requests (Singleton)")]
+    [Benchmark(Description = "OtherMediator - 1000 requests (Singleton)", Baseline = true)]
     public async Task OtherMediatorSourceGen_MemoryProfile()
     {
         for (var i = 0; i < Iterations; i++)
