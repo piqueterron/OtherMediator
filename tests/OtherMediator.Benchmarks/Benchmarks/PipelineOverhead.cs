@@ -77,8 +77,32 @@ public class PipelineOverhead
         _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
         _mediatRProvider = mediatRSingletonCollection.BuildServiceProvider();
 
+        WarmUpHandlers();
+
         _otherMediator = _otherMediatorProvider.GetRequiredService<Contracts.IMediator>();
         _mediatR = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
+    }
+
+    private void WarmUpHandlers()
+    {
+        var simpleHandler = _otherMediatorProvider.GetRequiredService<
+            Contracts.IRequestHandler<SimpleRequest, SimpleResponse>>();
+        var complexHandler = _otherMediatorProvider.GetRequiredService<
+            Contracts.IRequestHandler<ComplexRequest, ComplexResponse>>();
+        var notificationHandlers = _otherMediatorProvider.GetServices<
+            Contracts.INotificationHandler<SimpleNotification>>().ToList();
+
+        var simpleBehaviors = new List<Contracts.IPipelineBehavior<SimpleRequest, SimpleResponse>>();
+        var complexBehaviors = new List<Contracts.IPipelineBehavior<ComplexRequest, ComplexResponse>>();
+        var notificationBehaviors = new List<IPipelineBehavior<SimpleNotification>>();
+
+        WarmMediator.WarmRequestHandlers(simpleHandler, simpleBehaviors);
+        WarmMediator.WarmRequestHandlers(complexHandler, complexBehaviors);
+
+        foreach (var notificationHandler in notificationHandlers)
+        {
+            WarmMediator.WarmNotificationHandlers(notificationHandler, notificationBehaviors);
+        }
     }
 
     [Benchmark]
