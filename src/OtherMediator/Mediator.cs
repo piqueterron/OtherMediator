@@ -1,26 +1,22 @@
 namespace OtherMediator;
 
+using System.Collections.Concurrent;
 using OtherMediator.Contracts;
 
-public sealed class Mediator(IMediatorConfiguration configuration) : IMediator
+public sealed class Mediator(IMediatorConfiguration configuration, IContainer container) : IMediator
 {
     private readonly IMediatorConfiguration _configuration = configuration;
+    private readonly IContainer _container = container;
+
+    private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
+    private readonly ConcurrentDictionary<INotification, IEnumerable<Task>> _publishCache = new();
 
     public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var delegates = WarmMediator.GetNotificationHandlers(typeof(TNotification));
-
-        var handlers = delegates?.Select(d => (Func<object, CancellationToken, Task>)d).ToArray();
-
-        if (handlers is null || handlers.Length == 0)
-        {
-            return;
-        }
-
-        var tasks = handlers.Select(task => task(notification, cancellationToken)).ToArray();
+        var tasks = GetOrAddPublishers(notification, cancellationToken);
 
         if (_configuration.DispatchStrategy == DispatchStrategy.Parallel)
         {
@@ -41,14 +37,7 @@ public sealed class Mediator(IMediatorConfiguration configuration) : IMediator
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var requestType = request.GetType();
-
-        var sender = WarmMediator.GetRequestHandler(requestType, typeof(TResponse)) as Func<object, CancellationToken, Task<TResponse>>;
-
-        if (sender is null)
-        {
-            throw new InvalidOperationException($"No request handler registered for {requestType.Name} -> {typeof(TResponse).Name}");
-        }
+        var sender = GetOrAddHandler<TResponse>();
 
         return await sender(request, cancellationToken);
     }
@@ -57,15 +46,39 @@ public sealed class Mediator(IMediatorConfiguration configuration) : IMediator
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var requestType = request.GetType();
-
-        var sender = WarmMediator.GetRequestHandler(requestType, typeof(Unit)) as Func<object, CancellationToken, Task<Unit>>;
-
-        if (sender is null)
-        {
-            throw new InvalidOperationException($"No request handler registered for {requestType.Name} -> {typeof(Unit).Name}");
-        }
+        var sender = GetOrAddHandler<Unit>();
 
         return await sender(request, cancellationToken);
+    }
+
+    private Func<IRequest<TResponse>, CancellationToken, Task<TResponse>> GetOrAddHandler<TResponse>()
+    {
+        var key = (typeof(IRequest<TResponse>), typeof(TResponse));
+
+        return (Func<IRequest<TResponse>, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(key, _ =>
+        {
+            var handler = _container.Resolve<IRequestHandler<IRequest<TResponse>, TResponse>>();
+
+            if (handler is null)
+            {
+                throw new InvalidOperationException($"Make sure to register an IRequestHandler<{typeof(IRequest<TResponse>).Name}, {typeof(TResponse).Name}> in the dependency container.");
+            }
+
+            var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<IRequest<TResponse>, TResponse>>>();
+            pipelines ??= [];
+
+            return MiddlewarePipelineBuilder.BuildPipeline(handler, pipelines);
+        });
+    }
+
+    private IEnumerable<Task> GetOrAddPublishers<TNotification>(TNotification notification, CancellationToken cancellationToken) where TNotification : INotification
+    {
+        return _publishCache.GetOrAdd(notification, _ =>
+        {
+            var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
+            handlers ??= [];
+
+            return handlers.Select(handler => handler.Handle(notification, cancellationToken)).ToArray();
+        });
     }
 }

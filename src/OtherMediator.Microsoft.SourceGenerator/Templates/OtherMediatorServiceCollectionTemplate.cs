@@ -41,7 +41,6 @@ public class OtherMediatorServiceCollectionTemplate
                     {
                         ArgumentNullException.ThrowIfNull(services);
 
-                        services.AddTransient<IStartupFilter, OtherMediatorWarmStartupFilter>();
                         services.AddMediator(config);
 
                 {{string.Join("\n", arg.SelectMany(handler =>

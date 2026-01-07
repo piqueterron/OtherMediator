@@ -6,7 +6,6 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using OtherMediator.Benchmarks.Extensions;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
 
@@ -35,12 +34,6 @@ public class SingletonScenarios
             config.DispatchStrategy = DispatchStrategy.Parallel;
         });
 
-        _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
-
-        WarmUpExtensions.WarmUpDefault(_otherMediatorProvider);
-
-        _otherMediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
-
         var mediatRSingletonCollection = new ServiceCollection();
 
         mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
@@ -48,23 +41,25 @@ public class SingletonScenarios
         mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
         mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
 
-        mediatRSingletonCollection.AddMediatR(typeof(Program).Assembly);
+        mediatRSingletonCollection.AddMediatR(cfg => cfg.AsSingleton(), typeof(Program).Assembly);
 
+        _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
         _mediatRProvider = mediatRSingletonCollection.BuildServiceProvider();
 
+        _otherMediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
         _mediatR = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
     }
 
     [GlobalCleanup]
     public void GlobalCleanup()
     {
-        if (_otherMediatorProvider is IDisposable disposable1)
+        if (_otherMediatorProvider is IDisposable otherMediatorDisposable)
         {
-            disposable1.Dispose();
+            otherMediatorDisposable.Dispose();
         }
-        if (_mediatRProvider is IDisposable disposable2)
+        if (_mediatRProvider is IDisposable mediatrDisposable)
         {
-            disposable2.Dispose();
+            mediatrDisposable.Dispose();
         }
     }
 
@@ -90,6 +85,15 @@ public class SingletonScenarios
         }
     }
 
+    [Benchmark(Description = "OtherMediator - Notification Operations (Singleton)")]
+    public async Task OtherMediator_Notification_Singleton()
+    {
+        for (var i = 0; i < ConcurrentRequests; i++)
+        {
+            await _otherMediator.Publish(new SimpleNotification($"OtherMediator_{i}", DateTime.UtcNow));
+        }
+    }
+
     [Benchmark(Description = "MediatR - Parallel Send Operations (Singleton)")]
     public async Task MediatR_Parallel_Send_Singleton()
     {
@@ -109,6 +113,15 @@ public class SingletonScenarios
         for (var i = 0; i < ConcurrentRequests; i++)
         {
             await _mediatR.Send(new SimpleRequest(i, $"Sequential_{i}"));
+        }
+    }
+
+    [Benchmark(Description = "MediatR - Notification Operations (Singleton)")]
+    public async Task MediatR_Notification_Singleton()
+    {
+        for (var i = 0; i < ConcurrentRequests; i++)
+        {
+            await _mediatR.Publish(new SimpleNotification($"MediatR_{i}", DateTime.UtcNow));
         }
     }
 }

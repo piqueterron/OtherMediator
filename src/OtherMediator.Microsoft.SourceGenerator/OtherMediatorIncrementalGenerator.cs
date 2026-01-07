@@ -32,7 +32,6 @@ public sealed class OtherMediatorIncrementalGenerator : IIncrementalGenerator
         var handlers = requestHandlers.Combine(notificationHandlers)
             .Select(static (handlers, _) => handlers.Left.AddRange(handlers.Right));
 
-        context.RegisterSourceOutput(handlers, OtherMediatorStartupTemplate.GetTemplateAction<ITypeSymbol?>(NAMESPACE_ROOT));
         context.RegisterSourceOutput(handlers, OtherMediatorServiceCollectionTemplate.GetTemplateAction<ITypeSymbol?>(NAMESPACE_ROOT));
     }
 }

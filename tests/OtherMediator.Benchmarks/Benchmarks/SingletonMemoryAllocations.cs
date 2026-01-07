@@ -3,7 +3,6 @@ namespace OtherMediator.Benchmarks.Benchmarks;
 using BenchmarkDotNet.Attributes;
 using global::Microsoft.Extensions.DependencyInjection;
 using MediatR;
-using OtherMediator.Benchmarks.Extensions;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
 
@@ -30,12 +29,6 @@ public class SingletonMemoryAllocations
             config.DispatchStrategy = DispatchStrategy.Parallel;
         });
 
-        _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
-
-        WarmUpExtensions.WarmUpDefault(_otherMediatorProvider);
-
-        _otherMediator = _otherMediatorProvider.GetRequiredService<Contracts.IMediator>();
-
         var mediatRSingletonCollection = new ServiceCollection();
 
         mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
@@ -43,23 +36,25 @@ public class SingletonMemoryAllocations
         mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
         mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
 
-        mediatRSingletonCollection.AddMediatR(typeof(Program).Assembly);
+        mediatRSingletonCollection.AddMediatR(o => o.AsSingleton(), typeof(Program).Assembly);
 
+        _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
         _mediatRProvider = mediatRSingletonCollection.BuildServiceProvider();
 
+        _otherMediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
         _mediatR = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
     }
 
     [GlobalCleanup]
     public void GlobalCleanup()
     {
-        if (_otherMediatorProvider is IDisposable disposable1)
+        if (_otherMediatorProvider is IDisposable otherMediatorDisposable)
         {
-            disposable1.Dispose();
+            otherMediatorDisposable.Dispose();
         }
-        if (_mediatRProvider is IDisposable disposable2)
+        if (_mediatRProvider is IDisposable mediatrDisposable)
         {
-            disposable2.Dispose();
+            mediatrDisposable.Dispose();
         }
     }
 

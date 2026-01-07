@@ -6,7 +6,6 @@ using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using OtherMediator.Benchmarks.Extensions;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
 
@@ -37,8 +36,6 @@ public class ScopedScenarios
 
         _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
 
-        WarmUpExtensions.WarmUpDefault(_otherMediatorProvider);
-
         _otherMediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
 
         var mediatRSingletonCollection = new ServiceCollection();
@@ -58,13 +55,13 @@ public class ScopedScenarios
     [GlobalCleanup]
     public void GlobalCleanup()
     {
-        if (_otherMediatorProvider is IDisposable disposable1)
+        if (_otherMediatorProvider is IDisposable otherMediatorDisposable)
         {
-            disposable1.Dispose();
+            otherMediatorDisposable.Dispose();
         }
-        if (_mediatRProvider is IDisposable disposable2)
+        if (_mediatRProvider is IDisposable mediatrDisposable)
         {
-            disposable2.Dispose();
+            mediatrDisposable.Dispose();
         }
     }
 

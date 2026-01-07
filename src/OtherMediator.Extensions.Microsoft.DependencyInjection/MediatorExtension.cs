@@ -136,6 +136,27 @@ public static class MediatorExtension
     /// <param name="services">The service collection to register the mediator into.</param>
     private static void AddCoreMediator(this IServiceCollection services)
     {
-        services.AddSingleton<IMediator>(_ => new Mediator(MediatorConfiguration));
+        services.AddSingleton(sp => new MicrosoftContainer(sp));
+
+        services.AddSingleton<IMediator>(sp =>
+        {
+            var container = sp.GetRequiredService<MicrosoftContainer>();
+
+            return new Mediator(MediatorConfiguration, container);
+        });
+
+        services.AddSingleton<IPublisher>(sp =>
+        {
+            var container = sp.GetRequiredService<MicrosoftContainer>();
+
+            return new Mediator(MediatorConfiguration, container);
+        });
+
+        services.AddSingleton<ISender>(sp =>
+        {
+            var container = sp.GetRequiredService<MicrosoftContainer>();
+
+            return new Mediator(MediatorConfiguration, container);
+        });
     }
 }
