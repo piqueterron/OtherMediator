@@ -8,7 +8,7 @@ using OtherMediator.Contracts;
 
 [MemoryDiagnoser]
 [MemoryRandomization]
-public class MemoryAllocations
+public class TransientMemoryAllocations
 {
     private const int Iterations = 1000;
 
@@ -24,7 +24,7 @@ public class MemoryAllocations
 
         otherSingletonCollection.AddOtherMediator(config =>
         {
-            config.Lifetime = Lifetime.Singleton;
+            config.Lifetime = Lifetime.Transient;
             config.UseExceptionHandler = false;
             config.DispatchStrategy = DispatchStrategy.Parallel;
         });
@@ -35,12 +35,12 @@ public class MemoryAllocations
 
         var mediatRSingletonCollection = new ServiceCollection();
 
-        mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
-        mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<ComplexRequest, ComplexResponse>, ComplexRequestHandler>();
-        mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
-        mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
+        mediatRSingletonCollection.AddTransient<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
+        mediatRSingletonCollection.AddTransient<MediatR.IRequestHandler<ComplexRequest, ComplexResponse>, ComplexRequestHandler>();
+        mediatRSingletonCollection.AddTransient<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
+        mediatRSingletonCollection.AddTransient<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
 
-        mediatRSingletonCollection.AddMediatR(typeof(Program).Assembly);
+        mediatRSingletonCollection.AddMediatR(o => o.AsTransient(), typeof(Program).Assembly);
 
         _mediatRProvider = mediatRSingletonCollection.BuildServiceProvider();
 
@@ -50,17 +50,17 @@ public class MemoryAllocations
     [GlobalCleanup]
     public void GlobalCleanup()
     {
-        if (_otherMediatorProvider is IDisposable disposable1)
+        if (_otherMediatorProvider is IDisposable otherMediatorDisposable)
         {
-            disposable1.Dispose();
+            otherMediatorDisposable.Dispose();
         }
-        if (_mediatRProvider is IDisposable disposable2)
+        if (_mediatRProvider is IDisposable mediatrDisposable)
         {
-            disposable2.Dispose();
+            mediatrDisposable.Dispose();
         }
     }
 
-    [Benchmark(Description = "OtherMediator (SourceGen) - 1000 requests (Singleton)")]
+    [Benchmark(Description = "OtherMediator - 1000 requests (Transient)", Baseline = true)]
     public async Task OtherMediatorSourceGen_MemoryProfile()
     {
         for (var i = 0; i < Iterations; i++)
@@ -69,7 +69,7 @@ public class MemoryAllocations
         }
     }
 
-    [Benchmark(Description = "MediatR - 1000 requests (Singleton)")]
+    [Benchmark(Description = "MediatR - 1000 requests (Transient)")]
     public async Task MediatRBenchmark_MemoryProfile()
     {
         for (var i = 0; i < Iterations; i++)

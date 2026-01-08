@@ -10,10 +10,12 @@ using OtherMediator.Contracts;
 /// </summary>
 public static class MediatorExtension
 {
+    private static MediatorConfiguration _mediatorConfiguration;
+
     /// <summary>
     /// Gets the current <see cref="MediatorConfiguration"/> instance.
     /// </summary>
-    public static MediatorConfiguration MediatorConfiguration;
+    public static MediatorConfiguration MediatorConfiguration => _mediatorConfiguration ??= new MediatorConfiguration();
 
     /// <summary>
     /// Adds OtherMediator to the provided <see cref="IServiceCollection"/>.
@@ -51,9 +53,9 @@ public static class MediatorExtension
             }
         }
 
-        MediatorConfiguration = opt;
+        _mediatorConfiguration = opt;
 
-        services.AddCoreMediator(opt);
+        services.AddCoreMediator();
 
         return services;
     }
@@ -113,7 +115,6 @@ public static class MediatorExtension
     /// services.AddPipelineBehavior&lt;MyRequest, MyResponse&gt;(typeof(MyCustomBehavior&lt;MyRequest, MyResponse&gt;));
     /// </code>
     /// </example>
-
     public static IServiceCollection AddPipelineBehavior<TRequest, TResponse>(this IServiceCollection services, Type type)
         where TRequest : IRequest<TResponse>
     {
@@ -133,14 +134,29 @@ public static class MediatorExtension
     /// Registers the core <see cref="IMediator"/> implementation into the provided <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The service collection to register the mediator into.</param>
-    private static void AddCoreMediator(this IServiceCollection services, IMediatorConfiguration mediatorConfiguration)
+    private static void AddCoreMediator(this IServiceCollection services)
     {
+        services.AddSingleton(sp => new MicrosoftContainer(sp));
+
         services.AddSingleton<IMediator>(sp =>
         {
-            var container = new MicrosoftContainer(sp);
-            var pipeline = new MiddlewarePipeline();
+            var container = sp.GetRequiredService<MicrosoftContainer>();
 
-            return new Mediator(container, pipeline, mediatorConfiguration);
+            return new Mediator(MediatorConfiguration, container);
+        });
+
+        services.AddSingleton<IPublisher>(sp =>
+        {
+            var container = sp.GetRequiredService<MicrosoftContainer>();
+
+            return new Mediator(MediatorConfiguration, container);
+        });
+
+        services.AddSingleton<ISender>(sp =>
+        {
+            var container = sp.GetRequiredService<MicrosoftContainer>();
+
+            return new Mediator(MediatorConfiguration, container);
         });
     }
 }

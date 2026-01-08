@@ -1,22 +1,25 @@
 namespace OtherMediator.Benchmarks.Benchmarks;
 
+using System;
+using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
-using global::Microsoft.Extensions.DependencyInjection;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
 
-[SimpleJob(RunStrategy.ColdStart, iterationCount: 5)]
+[SimpleJob(RunStrategy.Throughput, iterationCount: 10)]
 [ThreadingDiagnoser]
-public class ConcurrentScenarios
+public class SingletonScenarios
 {
     private IServiceProvider _otherMediatorProvider = null!;
     private IServiceProvider _mediatRProvider = null!;
+
     private Contracts.IMediator _otherMediator;
     private MediatR.IMediator _mediatR;
 
-    [Params(1, 10, 100)]
+    [Params(1, 10, 100, 1000, 10000)]
     public int ConcurrentRequests { get; set; }
 
     [GlobalSetup]
@@ -31,10 +34,6 @@ public class ConcurrentScenarios
             config.DispatchStrategy = DispatchStrategy.Parallel;
         });
 
-        _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
-
-        _otherMediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
-
         var mediatRSingletonCollection = new ServiceCollection();
 
         mediatRSingletonCollection.AddSingleton<MediatR.IRequestHandler<SimpleRequest, SimpleResponse>, SimpleRequestHandler>();
@@ -42,28 +41,30 @@ public class ConcurrentScenarios
         mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SimpleNotificationHandler>();
         mediatRSingletonCollection.AddSingleton<MediatR.INotificationHandler<SimpleNotification>, SecondNotificationHandler>();
 
-        mediatRSingletonCollection.AddMediatR(typeof(Program).Assembly);
+        mediatRSingletonCollection.AddMediatR(cfg => cfg.AsSingleton(), typeof(Program).Assembly);
 
+        _otherMediatorProvider = otherSingletonCollection.BuildServiceProvider();
         _mediatRProvider = mediatRSingletonCollection.BuildServiceProvider();
 
+        _otherMediator = _otherMediatorProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
         _mediatR = _mediatRProvider.GetRequiredService<MediatR.IMediator>();
     }
 
     [GlobalCleanup]
     public void GlobalCleanup()
     {
-        if (_otherMediatorProvider is IDisposable disposable1)
+        if (_otherMediatorProvider is IDisposable otherMediatorDisposable)
         {
-            disposable1.Dispose();
+            otherMediatorDisposable.Dispose();
         }
-        if (_mediatRProvider is IDisposable disposable2)
+        if (_mediatRProvider is IDisposable mediatrDisposable)
         {
-            disposable2.Dispose();
+            mediatrDisposable.Dispose();
         }
     }
 
-    [Benchmark(Description = "OtherMediator - Concurrent Send Operations (Singleton)")]
-    public async Task OtherMediatorSourceGen_ConcurrentSends()
+    [Benchmark(Description = "OtherMediator - Parallel Send Operations (Singleton)")]
+    public async Task OtherMediator_Parallel_Send_Singleton()
     {
         var tasks = new List<Task<SimpleResponse>>();
 
@@ -75,26 +76,26 @@ public class ConcurrentScenarios
         await Task.WhenAll(tasks);
     }
 
-    [Benchmark(Description = "OtherMediator - Sequential vs Concurrent (Singleton)")]
-    public async Task SequentialVsConcurrent_Comparison()
+    [Benchmark(Description = "OtherMediator - Sequential Send Operations (Singleton)")]
+    public async Task OtherMediator_Sequential_Send_Singleton()
     {
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < ConcurrentRequests; i++)
         {
             await _otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Sequential_{i}"));
         }
-
-        var concurrentTasks = new Task[ConcurrentRequests];
-
-        for (var i = 0; i < ConcurrentRequests; i++)
-        {
-            concurrentTasks[i] = _otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Concurrent_{i}"));
-        }
-
-        await Task.WhenAll(concurrentTasks);
     }
 
-    [Benchmark(Description = "MediatR - Concurrent Send Operations (Singleton)")]
-    public async Task MediatR_ConcurrentSends()
+    [Benchmark(Description = "OtherMediator - Notification Operations (Singleton)")]
+    public async Task OtherMediator_Notification_Singleton()
+    {
+        for (var i = 0; i < ConcurrentRequests; i++)
+        {
+            await _otherMediator.Publish(new SimpleNotification($"OtherMediator_{i}", DateTime.UtcNow));
+        }
+    }
+
+    [Benchmark(Description = "MediatR - Parallel Send Operations (Singleton)")]
+    public async Task MediatR_Parallel_Send_Singleton()
     {
         var tasks = new List<Task<SimpleResponse>>();
 
@@ -106,21 +107,21 @@ public class ConcurrentScenarios
         await Task.WhenAll(tasks);
     }
 
-    [Benchmark(Description = "MediatR - Sequential vs Concurrent (Singleton)")]
-    public async Task MediatR_Comparison()
+    [Benchmark(Description = "MediatR - Sequential Send Operations (Singleton)")]
+    public async Task MediatR_Sequential_Send_Singleton()
     {
-        for (var i = 0; i < 10; i++)
+        for (var i = 0; i < ConcurrentRequests; i++)
         {
             await _mediatR.Send(new SimpleRequest(i, $"Sequential_{i}"));
         }
+    }
 
-        var concurrentTasks = new Task[ConcurrentRequests];
-
+    [Benchmark(Description = "MediatR - Notification Operations (Singleton)")]
+    public async Task MediatR_Notification_Singleton()
+    {
         for (var i = 0; i < ConcurrentRequests; i++)
         {
-            concurrentTasks[i] = _mediatR.Send(new SimpleRequest(i, $"Concurrent_{i}"));
+            await _mediatR.Publish(new SimpleNotification($"MediatR_{i}", DateTime.UtcNow));
         }
-
-        await Task.WhenAll(concurrentTasks);
     }
 }

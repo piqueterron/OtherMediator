@@ -7,7 +7,7 @@ using OtherMediator.Contracts;
 
 public class TestSendHandler : IRequestHandler<TestRequest, TestResponse>
 {
-    public async Task<TestResponse> Handle(TestRequest request, CancellationToken cancellationToken = default)
+    public async Task<TestResponse> HandleAsync(TestRequest request, CancellationToken cancellationToken = default)
     {
         await Task.Delay(200); //simulating workload
 
@@ -21,7 +21,7 @@ public class TestSendHandler : IRequestHandler<TestRequest, TestResponse>
 
 public class TestUnitSendHandler : IRequestHandler<TestRequestUnit, Unit>
 {
-    public async Task<Unit> Handle(TestRequestUnit request, CancellationToken cancellationToken = default)
+    public async Task<Unit> HandleAsync(TestRequestUnit request, CancellationToken cancellationToken = default)
     {
         await Task.Delay(200); //simulating workload
 
@@ -31,7 +31,7 @@ public class TestUnitSendHandler : IRequestHandler<TestRequestUnit, Unit>
 
 public class TestExceptionSendHandler : IRequestHandler<TestExceptionRequest, TestResponse>
 {
-    public async Task<TestResponse> Handle(TestExceptionRequest request, CancellationToken cancellationToken = default)
+    public async Task<TestResponse> HandleAsync(TestExceptionRequest request, CancellationToken cancellationToken = default)
     {
         await Task.Delay(200); //simulating workload
 

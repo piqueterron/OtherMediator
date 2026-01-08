@@ -1,5 +1,6 @@
 namespace OtherMediator.Microsoft.SourceGenerator;
 
+using System.Diagnostics;
 using global::Microsoft.CodeAnalysis;
 using OtherMediator.Microsoft.SourceGenerator.Templates;
 
@@ -10,6 +11,12 @@ public sealed class OtherMediatorIncrementalGenerator : IIncrementalGenerator
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+//#if DEBUG
+//        if (!Debugger.IsAttached)
+//        {
+//            Debugger.Launch();
+//        }
+//#endif
         var filter = new FilterSyntaxProvider(NAMESPACE_ROOT);
 
         var requestHandlers = context.SyntaxProvider
