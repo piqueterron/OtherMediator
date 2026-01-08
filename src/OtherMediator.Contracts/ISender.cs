@@ -42,64 +42,7 @@ namespace OtherMediator.Contracts;
 /// </item>
 /// </list>
 /// </para>
-/// <para>
-/// Execution pipeline flow:
-/// <code>
-/// ┌─────────────────────────────────────────────────────────┐
-/// │                    Send() called                        │
-/// └──────────────────────────┬──────────────────────────────┘
-///                            │
-///                 ┌──────────▼──────────┐
-///                 │  Pipeline Behaviors │
-///                 │  • Validation       │
-///                 │  • Authorization    │
-///                 │  • Logging          │
-///                 │  • Caching          │
-///                 └──────────┬──────────┘
-///                            │
-///                 ┌──────────▼──────────┐
-///                 │   Request Handler   │
-///                 │  • Business Logic   │
-///                 │  • Data Access      │
-///                 │  • Service Calls    │
-///                 └──────────┬──────────┘
-///                            │
-///                 ┌──────────▼──────────┐
-///                 │  Pipeline Behaviors │
-///                 │  • Post-processing  │
-///                 │  • Result shaping   │
-///                 │  • Error handling   │
-///                 └──────────┬──────────┘
-///                            │
-///                 ┌──────────▼──────────┐
-///                 │   Return Response   │
-///                 └─────────────────────┘
-/// </code>
-/// </para>
 /// </remarks>
-/// <example>
-/// Basic usage patterns:
-/// <code>
-/// // Command with response
-/// public class CreateOrderCommand : IRequest&lt;int&gt;
-/// {
-///     public int CustomerId { get; set; }
-///     public List&lt;OrderItem&gt; Items { get; set; }
-/// }
-/// 
-/// // Query 
-/// public class GetOrderQuery : IRequest&lt;OrderDto&gt;
-/// {
-///     public int OrderId { get; set; }
-/// }
-/// 
-/// // Command without response (void)
-/// public class CancelOrderCommand : IRequest
-/// {
-///     public int OrderId { get; set; }
-/// }
-/// </code>
-/// </example>
 /// <seealso cref="IPublisher"/>
 /// <seealso cref="IRequest{TResponse}"/>
 /// <seealso cref="IRequestHandler{TRequest, TResponse}"/>

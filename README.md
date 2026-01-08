@@ -246,6 +246,38 @@ IterationCount=10  RunStrategy=Throughput
 | &#39;MediatR - Parallel Send Operations (Transient)&#39;         | 10000              | 7,226,114.38 ns | 1,206,548.088 ns | 798,056.856 ns | 1257.8125 |                    - |                - | 515.6250 | 257.8125 | 15933954 B |
 | &#39;MediatR - Sequential Send Operations (Transient)&#39;       | 10000              | 3,631,997.03 ns |   714,176.046 ns | 472,383.235 ns | 1234.3750 |                    - |                - |   3.9063 |        - | 15511200 B |
 
+### Performance Comparison with MediatR Pipelines
+
+```
+
+BenchmarkDotNet v0.15.8, Windows 11 (10.0.26100.7462/24H2/2024Update/HudsonValley)
+Intel Core Ultra 7 155H 1.40GHz, 1 CPU, 22 logical and 16 physical cores
+.NET SDK 10.0.101
+  [Host]     : .NET 10.0.1 (10.0.1, 10.0.125.57005), X64 RyuJIT x86-64-v3
+  DefaultJob : .NET 10.0.1 (10.0.1, 10.0.125.57005), X64 RyuJIT x86-64-v3
+
+
+```
+| Method                                     | PipelineBehaviorsCount | Mean      | Error     | StdDev    | Median    | Rank | Completed Work Items | Lock Contentions | Gen0   | Gen1   | Allocated |
+|------------------------------------------- |----------------------- |----------:|----------:|----------:|----------:|-----:|---------------------:|-----------------:|-------:|-------:|----------:|
+| Pipeline_Cost_Per_Behavior_NoScope         | 0                      |  72.84 ns |  0.753 ns |  0.629 ns |  72.87 ns |    1 |                    - |                - | 0.0223 |      - |     280 B |
+| Pipeline_Cost_Per_Behavior_NoScope         | 1                      |  83.18 ns |  1.616 ns |  2.043 ns |  83.12 ns |    2 |                    - |                - | 0.0280 |      - |     352 B |
+| Pipeline_Cost_Per_Behavior                 | 0                      | 113.37 ns |  2.830 ns |  8.343 ns | 108.43 ns |    3 |                    - |                - | 0.0324 |      - |     408 B |
+| Pipeline_Cost_Per_Behavior_NoScope         | 3                      | 115.59 ns |  2.265 ns |  4.679 ns | 115.03 ns |    3 |                    - |                - | 0.0395 |      - |     496 B |
+| Pipeline_Cost_Per_Behavior                 | 1                      | 130.46 ns |  4.273 ns | 11.983 ns | 124.85 ns |    4 |                    - |                - | 0.0381 |      - |     480 B |
+| Pipeline_Cost_Per_Behavior_NoScope         | 5                      | 151.59 ns |  2.984 ns |  6.675 ns | 150.85 ns |    5 |                    - |                - | 0.0508 |      - |     640 B |
+| Pipeline_Cost_Per_Behavior                 | 3                      | 154.22 ns |  2.101 ns |  1.640 ns | 154.94 ns |    5 |                    - |                - | 0.0496 |      - |     624 B |
+| Pipeline_Cost_Per_Behavior                 | 5                      | 206.29 ns |  5.403 ns | 15.151 ns | 200.05 ns |    6 |                    - |                - | 0.0610 |      - |     768 B |
+| Pipeline_Cost_Per_Behavior_MediatR_NoScope | 1                      | 343.37 ns |  3.717 ns |  3.477 ns | 343.70 ns |    7 |                    - |                - | 0.1316 |      - |    1656 B |
+| Pipeline_Cost_Per_Behavior_MediatR_NoScope | 0                      | 350.36 ns | 13.328 ns | 37.593 ns | 340.26 ns |    7 |                    - |                - | 0.1163 |      - |    1464 B |
+| Pipeline_Cost_Per_Behavior_MediatR         | 0                      | 370.29 ns |  7.427 ns | 14.486 ns | 367.76 ns |    7 |                    - |                - | 0.1335 |      - |    1680 B |
+| Pipeline_Cost_Per_Behavior_MediatR         | 1                      | 405.27 ns |  7.170 ns |  5.987 ns | 404.72 ns |    8 |                    - |                - | 0.1488 |      - |    1872 B |
+| Pipeline_Cost_Per_Behavior_MediatR_NoScope | 3                      | 479.29 ns | 16.575 ns | 48.350 ns | 474.04 ns |    9 |                    - |                - | 0.1621 | 0.0005 |    2040 B |
+| Pipeline_Cost_Per_Behavior_MediatR         | 3                      | 504.12 ns |  5.239 ns |  4.374 ns | 502.36 ns |    9 |                    - |                - | 0.1793 |      - |    2256 B |
+| Pipeline_Cost_Per_Behavior_MediatR_NoScope | 5                      | 520.96 ns | 10.237 ns | 15.633 ns | 519.12 ns |    9 |                    - |                - | 0.1926 |      - |    2424 B |
+| Pipeline_Cost_Per_Behavior_MediatR         | 5                      | 592.48 ns | 11.823 ns | 21.319 ns | 595.88 ns |   10 |                    - |                - | 0.2098 | 0.0010 |    2640 B |
+
+
 </details>
 
 ### 📊 Performance Comparison Table

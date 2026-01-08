@@ -3,6 +3,7 @@ namespace OtherMediator;
 using System.Collections.Concurrent;
 using OtherMediator.Contracts;
 
+/// <inheritdoc cref="IMediator" />
 public sealed class Mediator(IMediatorConfiguration configuration, IContainer container) : IMediator
 {
     private readonly IMediatorConfiguration _configuration = configuration;
@@ -11,7 +12,7 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
     private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
     private readonly ConcurrentDictionary<INotification, IEnumerable<Task>> _publishCache = new();
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="IPublisher" />
     public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
@@ -34,7 +35,7 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="ISender" />
     public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest<TResponse>
     {
@@ -45,7 +46,7 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
         return await sender(request, cancellationToken);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc cref="ISender" />
     public async Task<Unit> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default)
         where TRequest : IRequest
     {
