@@ -20,7 +20,9 @@ It supports **Source Generators**, improving performance and reducing runtime re
 ---
 
 ## 🚀 Basic Usage
+
 ### 1. Mediator Configuration
+
 Register the Mediator in your application:
 
 ```csharp
@@ -32,6 +34,7 @@ services.AddOtherMediator();
 ```
 
 ### 2. Message Definitions
+
 Define your messages and handlers:
 
 ```csharp
@@ -49,6 +52,7 @@ public class TestRequestHandler : IRequestHandler<TestRequest, TestResponse>
 ```
 
 ### 3. Sending Messages
+
 Inject `IMediator` and send messages:
 
 ```csharp
@@ -242,8 +246,63 @@ IterationCount=10  RunStrategy=Throughput
 | &#39;MediatR - Parallel Send Operations (Transient)&#39;         | 10000              | 7,226,114.38 ns | 1,206,548.088 ns | 798,056.856 ns | 1257.8125 |                    - |                - | 515.6250 | 257.8125 | 15933954 B |
 | &#39;MediatR - Sequential Send Operations (Transient)&#39;       | 10000              | 3,631,997.03 ns |   714,176.046 ns | 472,383.235 ns | 1234.3750 |                    - |                - |   3.9063 |        - | 15511200 B |
 
-
 </details>
+
+### 📊 Performance Comparison Table
+
+#### Send Operations (Scoped Lifetime)
+
+| Metric | OtherMediator | MediatR | Advantage |
+|--------|---------------|---------|-----------|
+| Speed (1 request) | 154 ns | 396 ns | 2.6× faster |
+| Speed (1000 requests) | 97 μs | 392 μs | 4.0× faster |
+| Memory (1 request) | 568 B | 1,752 B | 69% less memory |
+| Memory (1000 requests) | 367 KB | 1.55 MB | 76% less memory |
+| GC Pressure | Minimal | High Gen2 | Lower GC overhead |
+
+#### Notification Operations (Singleton)
+
+| Concurrent Requests | OtherMediator | MediatR | Performance Gain |
+|---------------------|---------------|---------|------------------|
+| 1 Request | 138.7 μs | 330.7 μs | 2.4× faster |
+| 100 Requests | 13.56 ms | 28.16 ms | 2.1× faster |
+| 10,000 Requests | 1.41 sec | 2.87 sec | 2.0× faster |
+
+### 📈 Detailed Performance Metrics
+
+#### Speed Comparison by Lifetime Scope
+
+| Lifetime | Performance Ratio | Memory Efficiency |
+|----------|-------------------|-------------------|
+| Scoped | 3.84× faster | 4.80× less memory |
+| Singleton | 4.04× faster | 4.80× less memory |
+| Transient | 4.00× faster | 4.87× less memory |
+
+#### Scalability Analysis (Parallel vs Sequential)
+
+| Library | Parallel Speed | Sequential Speed | Parallel Efficiency |
+|---------|----------------|------------------|---------------------|
+| OtherMediator | Excellent scaling | Optimal | High parallel throughput |
+| MediatR | Moderate scaling | Good | Higher overhead in parallel |
+
+### 🎯 Performance at Scale
+
+#### 10,000 Concurrent Requests Comparison
+
+| Aspect | OtherMediator | MediatR | Difference |
+|--------|---------------|---------|------------|
+| Execution Time | 3.27 ms (parallel)<br>795 μs (sequential) | 6.51 ms (parallel)<br>3.28 ms (sequential) | 2-4× faster |
+| Memory Allocated | 3.85 MB | 15.7 MB | 76% less memory |
+| GC Collections | Minimal Gen2 | High Gen2 activity | Better GC behavior |
+
+### 📋 Conclusion
+
+Based on comprehensive benchmark data:
+
+- **Speed**: 3-4× faster in real-world scenarios
+- **Memory**: 75-80% more efficient allocation
+- **Scalability**: Better handling of concurrent operations
+- **GC Impact**: Significantly lower garbage collection overhead
 
 ---
 
