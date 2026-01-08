@@ -11,6 +11,7 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
     private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
     private readonly ConcurrentDictionary<INotification, IEnumerable<Task>> _publishCache = new();
 
+    /// <inheritdoc />
     public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
@@ -33,38 +34,43 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
         }
     }
 
-    public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
+        where TRequest : IRequest<TResponse>
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var sender = GetOrAddHandler<TResponse>();
+        var sender = GetOrAddHandler<TRequest, TResponse>();
 
         return await sender(request, cancellationToken);
     }
 
-    public async Task<Unit> Send(IRequest request, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<Unit> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default)
+        where TRequest : IRequest
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
 
-        var sender = GetOrAddHandler<Unit>();
+        var sender = GetOrAddHandler<TRequest, Unit>();
 
         return await sender(request, cancellationToken);
     }
 
-    private Func<IRequest<TResponse>, CancellationToken, Task<TResponse>> GetOrAddHandler<TResponse>()
+    private Func<TRequest, CancellationToken, Task<TResponse>> GetOrAddHandler<TRequest, TResponse>()
+        where TRequest : IRequest<TResponse>
     {
-        var key = (typeof(IRequest<TResponse>), typeof(TResponse));
+        var key = (typeof(TRequest), typeof(TResponse));
 
-        return (Func<IRequest<TResponse>, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(key, _ =>
+        return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(key, _ =>
         {
-            var handler = _container.Resolve<IRequestHandler<IRequest<TResponse>, TResponse>>();
+            var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
 
             if (handler is null)
             {
-                throw new InvalidOperationException($"Make sure to register an IRequestHandler<{typeof(IRequest<TResponse>).Name}, {typeof(TResponse).Name}> in the dependency container.");
+                throw new InvalidOperationException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
             }
 
-            var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<IRequest<TResponse>, TResponse>>>();
+            var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
             pipelines ??= [];
 
             return MiddlewarePipelineBuilder.BuildPipeline(handler, pipelines);

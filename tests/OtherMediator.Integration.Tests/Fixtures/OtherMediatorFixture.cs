@@ -68,7 +68,7 @@ public class OtherMediatorFixture : IAsyncLifetime
             });
 
         builder.Services
-            .AddMediator(c =>
+            .AddOtherMediator(c =>
             {
                 c.Lifetime = Lifetime.Scoped;
             })
@@ -85,13 +85,13 @@ public class OtherMediatorFixture : IAsyncLifetime
         app.UseExceptionHandler();
 
         app.MapPost("/mediator", async (IMediator mediator, TestRequest request) =>
-            await mediator.Send(request));
+            await mediator.Send<TestRequest, TestResponse>(request));
 
         app.MapPost("/mediator-void", async (IMediator mediator, TestRequestUnit request) =>
             await mediator.Send(request));
 
         app.MapPost("/mediator-exception", async (IMediator mediator, TestExceptionRequest request) =>
-            await mediator.Send(request));
+            await mediator.Send<TestExceptionRequest, TestResponse>(request));
 
         app.MapPost("/notification", async (IMediator mediator, TestNotification request) =>
             await mediator.Publish(request));

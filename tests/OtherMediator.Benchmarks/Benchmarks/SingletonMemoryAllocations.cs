@@ -63,7 +63,7 @@ public class SingletonMemoryAllocations
     {
         for (var i = 0; i < Iterations; i++)
         {
-            await _otherMediator.Send(new SimpleRequest(i, $"Data_{i}"));
+            await _otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Data_{i}"));
         }
     }
 

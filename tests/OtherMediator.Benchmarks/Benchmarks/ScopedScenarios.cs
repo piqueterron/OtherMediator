@@ -72,7 +72,7 @@ public class ScopedScenarios
 
         for (var i = 0; i < ConcurrentRequests; i++)
         {
-            tasks.Add(_otherMediator.Send(new SimpleRequest(i, $"Concurrent_{i}")));
+            tasks.Add(_otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Concurrent_{i}")));
         }
 
         await Task.WhenAll(tasks);
@@ -83,7 +83,7 @@ public class ScopedScenarios
     {
         for (var i = 0; i < ConcurrentRequests; i++)
         {
-            await _otherMediator.Send(new SimpleRequest(i, $"Sequential_{i}"));
+            await _otherMediator.Send<SimpleRequest, SimpleResponse>(new SimpleRequest(i, $"Sequential_{i}"));
         }
     }
 

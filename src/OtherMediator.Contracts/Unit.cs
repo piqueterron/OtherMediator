@@ -1,5 +1,65 @@
 namespace OtherMediator.Contracts;
 
+/// <summary>
+/// Represents a type with only one value, used as a return type for void methods in generic contexts.
+/// This is similar to <c>void</c> but can be used as a generic type parameter.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The <see cref="Unit"/> type serves several purposes in the mediator pattern:
+/// <list type="bullet">
+/// <item>
+/// <description>
+/// Allows void operations to participate in generic pipelines (pipeline behaviors,
+/// handler interfaces, etc.)
+/// </description>
+/// </item>
+/// <item>
+/// <description>
+/// Provides a consistent API for both value-returning and non-value-returning operations
+/// </description>
+/// </item>
+/// <item>
+/// <description>
+/// Enables composition of operations in functional programming patterns
+/// </description>
+/// </item>
+/// </list>
+/// </para>
+/// <para>
+/// Characteristics:
+/// <list type="bullet">
+/// <item><description><strong>Singleton</strong>: Only one instance exists (<c>Unit.Value</c>)</description></item>
+/// <item><description><strong>Immutable</strong>: Cannot be modified</description></item>
+/// <item><description><strong>Value equality</strong>: All instances are equal</description></item>
+/// <item><description><strong>Serializable</strong>: Can be serialized if needed</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// In functional programming, <see cref="Unit"/> is known as the "unit type" or "0-tuple",
+/// representing a computation that produces no interesting result but may have side effects.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// // Using Unit in a handler
+/// public Task&lt;Unit&gt; HandleAsync(MyCommand command, CancellationToken ct)
+/// {
+///     // Perform side effects
+///     _logger.LogInformation("Command executed");
+///     
+///     // Return the singleton Unit value
+///     return Task.FromResult(Unit.Value);
+/// }
+/// 
+/// // Pattern matching (though rarely needed)
+/// var result = await mediator.Send(new MyCommand());
+/// if (result == Unit.Value)
+/// {
+///     // Command completed successfully
+/// }
+/// </code>
+/// </example>
 public readonly struct Unit : IEquatable<Unit>, IComparable<Unit>, IComparable
 {
     public static readonly Unit Value = new();
