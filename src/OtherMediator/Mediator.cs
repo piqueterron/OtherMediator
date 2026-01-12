@@ -10,7 +10,7 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
     private readonly IContainer _container = container;
 
     private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
-    private readonly ConcurrentDictionary<INotification, IEnumerable<Task>> _publishCache = new();
+    private readonly ConcurrentDictionary<INotification, IEnumerable<Delegate>> _publishCache = new();
 
     /// <inheritdoc cref="IPublisher" />
     public async Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
@@ -18,7 +18,9 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
     {
         ArgumentNullException.ThrowIfNull(notification, nameof(notification));
 
-        var tasks = GetOrAddPublishers(notification, cancellationToken);
+        var @delegates = GetOrAddPublishers(notification);
+
+        var tasks = @delegates.Select(task => task(notification, cancellationToken)).ToArray();
 
         if (_configuration.DispatchStrategy == DispatchStrategy.Parallel)
         {
@@ -78,14 +80,25 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
         });
     }
 
-    private IEnumerable<Task> GetOrAddPublishers<TNotification>(TNotification notification, CancellationToken cancellationToken) where TNotification : INotification
+    private IEnumerable<Func<TNotification, CancellationToken, Task>> GetOrAddPublishers<TNotification>(TNotification notification)
+        where TNotification : INotification
     {
-        return _publishCache.GetOrAdd(notification, _ =>
+        return (IEnumerable<Func<TNotification, CancellationToken, Task>>)_publishCache.GetOrAdd(notification, _ =>
         {
             var handlers = _container.Resolve<IEnumerable<INotificationHandler<TNotification>>>();
             handlers ??= [];
 
-            return handlers.Select(handler => handler.Handle(notification, cancellationToken)).ToArray();
+            var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TNotification>>>();
+            pipelines ??= [];
+
+            List<Func<TNotification, CancellationToken, Task>> builtPipelines = [];
+
+            foreach (var handler in handlers)
+            {
+                builtPipelines.Add(MiddlewarePipelineBuilder.BuildPipeline(handler, pipelines));
+            }
+
+            return builtPipelines;
         });
     }
 }

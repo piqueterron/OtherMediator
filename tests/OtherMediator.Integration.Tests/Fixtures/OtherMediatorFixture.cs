@@ -73,7 +73,9 @@ public class OtherMediatorFixture : IAsyncLifetime
                 c.Lifetime = Lifetime.Scoped;
             })
             .AddOpenPipelineBehavior(typeof(OpenTestPipeline<,>))
+            .AddOpenPipelineBehavior(typeof(GlobalTestNotificationPipeline<>))
             .AddPipelineBehavior<TestExceptionRequest, TestResponse>(typeof(TestPipeline<TestExceptionRequest, TestResponse>))
+            .AddPipelineBehavior<TestNotification>(typeof(TestNotificationPipeline<TestNotification>))
             .AddMediatorOpenTelemetry()
             .AddExceptionHandler<GlobalExceptionHandler>();
 
