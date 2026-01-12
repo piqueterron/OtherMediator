@@ -1,6 +1,10 @@
 namespace OtherMediator;
 
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using OtherMediator.Contracts;
 
 /// <inheritdoc cref="IMediator" />
@@ -9,7 +13,7 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
     private readonly IMediatorConfiguration _configuration = configuration;
     private readonly IContainer _container = container;
 
-    private readonly ConcurrentDictionary<(Type Request, Type Response), Delegate> _senderCache = new();
+    private readonly ConcurrentDictionary<(Type Request, Type Response), Func<object, CancellationToken, Task<object>>> _objectSenderCache = new();
     private readonly ConcurrentDictionary<INotification, IEnumerable<Delegate>> _publishCache = new();
 
     /// <inheritdoc cref="IPublisher" />
@@ -38,46 +42,39 @@ public sealed class Mediator(IMediatorConfiguration configuration, IContainer co
     }
 
     /// <inheritdoc cref="ISender" />
-    public async Task<TResponse> Send<TRequest, TResponse>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest<TResponse>
+    public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request, nameof(request));
+        var requestType = request.GetType();
+        var responseType = typeof(TResponse);
 
-        var sender = GetOrAddHandler<TRequest, TResponse>();
+        var key = (requestType, responseType);
 
-        return await sender(request, cancellationToken);
-    }
-
-    /// <inheritdoc cref="ISender" />
-    public async Task<Unit> Send<TRequest>(TRequest request, CancellationToken cancellationToken = default)
-        where TRequest : IRequest
-    {
-        ArgumentNullException.ThrowIfNull(request, nameof(request));
-
-        var sender = GetOrAddHandler<TRequest, Unit>();
-
-        return await sender(request, cancellationToken);
-    }
-
-    private Func<TRequest, CancellationToken, Task<TResponse>> GetOrAddHandler<TRequest, TResponse>()
-        where TRequest : IRequest<TResponse>
-    {
-        var key = (typeof(TRequest), typeof(TResponse));
-
-        return (Func<TRequest, CancellationToken, Task<TResponse>>)_senderCache.GetOrAdd(key, _ =>
+        var invoker = _objectSenderCache.GetOrAdd(key, _ =>
         {
-            var handler = _container.Resolve<IRequestHandler<TRequest, TResponse>>();
+            var handlerInterface = typeof(IRequestHandler<,>).MakeGenericType(requestType, responseType);
+            var handler = _container.Resolve(handlerInterface);
 
             if (handler is null)
             {
-                throw new InvalidOperationException($"Make sure to register an IRequestHandler<{typeof(TRequest).Name}, {typeof(TResponse).Name}> in the dependency container.");
+                throw new InvalidOperationException($"Make sure to register an IRequestHandler<{requestType.Name}, {responseType.Name}> in the dependency container.");
             }
 
-            var pipelines = _container.Resolve<IEnumerable<IPipelineBehavior<TRequest, TResponse>>>();
-            pipelines ??= [];
+            var pipelineBehaviorInterface = typeof(IPipelineBehavior<,>).MakeGenericType(requestType, responseType);
+            var pipelinesEnumerableType = typeof(IEnumerable<>).MakeGenericType(pipelineBehaviorInterface);
 
-            return MiddlewarePipelineBuilder.BuildPipeline(handler, pipelines);
+            var pipelines = _container.Resolve(pipelinesEnumerableType);
+
+            var invokerGeneric = typeof(RequestInvoker<,>).MakeGenericType(requestType, responseType);
+            var createMethod = invokerGeneric.GetMethod("Create", new[] { typeof(object), typeof(object) })!;
+
+            var wrapper = (Func<object, CancellationToken, Task<object>>)createMethod.Invoke(null, new[] { handler, pipelines })!;
+
+            return wrapper;
         });
+
+        var result = await invoker(request, cancellationToken);
+        return (TResponse)result!;
     }
 
     private IEnumerable<Func<TNotification, CancellationToken, Task>> GetOrAddPublishers<TNotification>(TNotification notification)

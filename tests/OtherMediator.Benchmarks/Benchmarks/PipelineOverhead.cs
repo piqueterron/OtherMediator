@@ -88,14 +88,14 @@ public class PipelineOverhead
         var mediator = scope.ServiceProvider.GetRequiredService<OtherMediator.Contracts.IMediator>();
 
         SimpleRequest request = new(1, "Pipeline Test");
-        await mediator.Send<SimpleRequest, SimpleResponse>(request);
+        await mediator.Send(request);
     }
 
     [Benchmark]
     public async Task Pipeline_Cost_Per_Behavior_NoScope()
     {
         SimpleRequest request = new(1, "Pipeline Test");
-        await _otherMediator.Send<SimpleRequest, SimpleResponse>(request);
+        await _otherMediator.Send(request);
     }
 
     [Benchmark]

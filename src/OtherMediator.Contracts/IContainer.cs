@@ -239,6 +239,14 @@ public interface IContainer
     /// or is not a valid service type.
     /// </exception>
     IEnumerable<T>? Resolve<T>(Type type);
+
+    /// <summary>
+    /// Resolves a service by its <see cref="Type"/> at runtime.
+    /// Returns the resolved instance or <see langword="null"/> if the service is not registered.
+    /// </summary>
+    /// <param name="type">The service <see cref="Type"/> to resolve.</param>
+    /// <returns>An instance of the requested <paramref name="type"/> or <see langword="null"/>.</returns>
+    object? Resolve(Type type);
 }
 
 /// <summary>

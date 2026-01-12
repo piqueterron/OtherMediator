@@ -97,4 +97,13 @@ internal class MicrosoftContainer(IServiceProvider serviceProvider) : IContainer
         var serviceType = typeof(IEnumerable<>).MakeGenericType(type);
         return serviceProvider.GetService(serviceType) as IEnumerable<T>;
     }
+
+    /// <summary>
+    /// Resolves a service by its <see cref="Type"/> at runtime.
+    /// Delegates to the underlying <see cref="IServiceProvider"/>.
+    /// </summary>
+    public object? Resolve(Type type)
+    {
+        return serviceProvider.GetService(type);
+    }
 }
