@@ -4,7 +4,6 @@ using System.Threading;
 using BenchmarkDotNet.Attributes;
 using global::Microsoft.Extensions.DependencyInjection;
 using MediatR;
-using OtherMediator;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
 using OtherMediator.Extensions.Microsoft.DependencyInjection;

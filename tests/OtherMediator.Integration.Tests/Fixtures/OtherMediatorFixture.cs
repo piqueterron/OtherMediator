@@ -76,7 +76,7 @@ public class OtherMediatorFixture : IAsyncLifetime
             .AddOpenPipelineBehavior(typeof(GlobalTestNotificationPipeline<>))
             .AddPipelineBehavior<TestExceptionRequest, TestResponse>(typeof(TestPipeline<TestExceptionRequest, TestResponse>))
             .AddPipelineBehavior<TestNotification>(typeof(TestNotificationPipeline<TestNotification>))
-            .AddMediatorOpenTelemetry()
+            //.AddMediatorOpenTelemetry()
             .AddExceptionHandler<GlobalExceptionHandler>();
 
         builder.WebHost.UseTestServer();

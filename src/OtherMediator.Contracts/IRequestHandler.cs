@@ -84,5 +84,5 @@ public interface IRequestHandler<TRequest, TResponse>
     /// <item><description>Check cancellation token periodically for long operations</description></item>
     /// </list>
     /// </remarks>
-    Task<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
+    Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken = default);
 }

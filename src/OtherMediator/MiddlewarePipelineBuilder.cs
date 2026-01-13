@@ -10,7 +10,7 @@ internal static class MiddlewarePipelineBuilder
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
         pipelines ??= Array.Empty<IPipelineBehavior<TRequest, TResponse>>();
 
-        Func<TRequest, CancellationToken, Task<TResponse>> step = handler.HandleAsync;
+        Func<TRequest, CancellationToken, Task<TResponse>> step = handler.Handle;
 
         foreach (var behavior in pipelines.Reverse())
         {

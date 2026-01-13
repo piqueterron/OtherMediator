@@ -5,6 +5,7 @@ using global::Microsoft.Extensions.DependencyInjection;
 using MediatR;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
+using OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 [MemoryDiagnoser]
 [MemoryRandomization]

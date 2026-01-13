@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using OtherMediator.Benchmarks.Harness;
 using OtherMediator.Contracts;
+using OtherMediator.Extensions.Microsoft.DependencyInjection;
 
 [SimpleJob(RunStrategy.Throughput, iterationCount: 10)]
 [ThreadingDiagnoser]
